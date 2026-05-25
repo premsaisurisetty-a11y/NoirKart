@@ -31,6 +31,26 @@ export function HomePage({ onProductClick }: HomePageProps) {
       return indexA - indexB;
     });
 
+  const scrollToCategory = (categoryName: string) => {
+    const targetId = `category-section-${categoryName.toLowerCase()}`;
+    const element = document.getElementById(targetId);
+    if (element) {
+      // Find dynamic scroll position with navbar offset safety
+      const offset = 120; // safe pixel height matching sticky top navigation
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    } else {
+      alert(`There are currently no curated "${categoryName}" deals available. Admins can add them from the Control Panel!`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,6 +99,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
                   key={category.id}
                   name={category.name}
                   image={category.image}
+                  onClick={() => scrollToCategory(category.name)}
                 />
               ))}
             </div>
@@ -90,7 +111,11 @@ export function HomePage({ onProductClick }: HomePageProps) {
           if (categoryProducts.length === 0) return null;
 
           return (
-            <section key={categoryName} className="mb-8">
+            <section 
+              key={categoryName} 
+              id={`category-section-${categoryName.toLowerCase()}`}
+              className="mb-8 scroll-mt-32"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
                   {categoryName === "Fashion" ? "Fashion & Accessories" : categoryName}
