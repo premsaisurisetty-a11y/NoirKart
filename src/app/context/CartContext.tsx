@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Product } from "../components/ProductCard";
 import { featuredProducts } from "../data/products";
-import { db, isFirebaseConfigured } from "../lib/firebase";
+import { db, isFirebaseConfigured, auth } from "../lib/firebase";
 import { collection, getDocs, addDoc, deleteDoc, doc, query } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 interface CartItem extends Product {
   quantity: number;
@@ -21,6 +22,14 @@ interface CartContextType {
   products: Product[];
   addProduct: (product: Omit<Product, "id">) => void;
   deleteProduct: (id: number) => void;
+
+  // Global Auth State
+  isLoggedIn: boolean;
+  isAdmin: boolean;
+  activeUserEmail: string;
+  userName: string;
+  loginUser: (email: string, name: string) => void;
+  logoutUser: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,6 +37,63 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   // Watchlist (Cart) state
   const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Global Authentication State
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeUserEmail, setActiveUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Monitor Authentication state changes (Firebase Auth with Offline Fallback)
+  useEffect(() => {
+    if (isFirebaseConfigured && auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLoggedIn(true);
+          const email = user.email || "";
+          setActiveUserEmail(email);
+          setUserName(user.displayName || (email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
+          setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+        } else {
+          setIsLoggedIn(false);
+          setActiveUserEmail("");
+          setUserName("");
+          setIsAdmin(false);
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      // Offline/Local session restore
+      const session = localStorage.getItem("noirkart_active_session");
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          setIsLoggedIn(true);
+          setActiveUserEmail(parsed.email);
+          setUserName(parsed.name);
+          setIsAdmin(parsed.email.toLowerCase() === "admin@noirkart.com");
+        } catch (e) {
+          console.error("Failed to restore local session", e);
+        }
+      }
+    }
+  }, []);
+
+  const loginUser = (email: string, name: string) => {
+    setIsLoggedIn(true);
+    const lowercaseEmail = email.toLowerCase();
+    setActiveUserEmail(lowercaseEmail);
+    setUserName(name);
+    setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+  };
+
+  const logoutUser = () => {
+    setIsLoggedIn(false);
+    setActiveUserEmail("");
+    setUserName("");
+    setIsAdmin(false);
+    localStorage.removeItem("noirkart_active_session");
+  };
 
   // Product Catalog state (Persisted in LocalStorage & synced with Firebase if configured)
   const [products, setProducts] = useState<Product[]>(() => {
@@ -212,6 +278,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         products,
         addProduct,
         deleteProduct,
+        isLoggedIn,
+        isAdmin,
+        activeUserEmail,
+        userName,
+        loginUser,
+        logoutUser,
       }}
     >
       {children}

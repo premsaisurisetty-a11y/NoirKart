@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
@@ -13,7 +13,14 @@ type Page = "home" | "product" | "cart" | "admin";
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { cartCount } = useCart();
+  const { cartCount, isAdmin } = useCart();
+
+  // Redirect to home if they log out or lose admin privileges while viewing the admin panel
+  useEffect(() => {
+    if (currentPage === "admin" && !isAdmin) {
+      setCurrentPage("home");
+    }
+  }, [isAdmin, currentPage]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -32,8 +39,12 @@ function AppContent() {
   };
 
   const handleAdminClick = () => {
-    setCurrentPage("admin");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (isAdmin) {
+      setCurrentPage("admin");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      alert("Access Denied: Only administrators can access the Control Center.");
+    }
   };
 
   return (

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Search, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useCart } from "../context/CartContext";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
 import {
   signInWithEmailAndPassword,
@@ -24,45 +25,19 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
   
   // Login / Auth State
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [activeUserEmail, setActiveUserEmail] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Monitor Authentication state changes (Firebase Auth with Offline Fallback)
-  useEffect(() => {
-    if (isFirebaseConfigured && auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setIsLoggedIn(true);
-          setActiveUserEmail(user.email || "");
-          setName(user.displayName || (user.email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
-        } else {
-          setIsLoggedIn(false);
-          setActiveUserEmail("");
-          setName("");
-        }
-      });
-      return () => unsubscribe();
-    } else {
-      // Offline/Local session restore
-      const session = localStorage.getItem("noirkart_active_session");
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          setIsLoggedIn(true);
-          setActiveUserEmail(parsed.email);
-          setName(parsed.name);
-        } catch (e) {
-          console.error("Failed to restore local session", e);
-        }
-      }
-    }
-  }, []);
+  const {
+    isLoggedIn,
+    activeUserEmail,
+    userName: name,
+    loginUser,
+    logoutUser
+  } = useCart();
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -80,12 +55,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
     if (isFirebaseConfigured && auth) {
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        setIsLoggedIn(true);
-        setActiveUserEmail(user.email || "");
-        setName(user.displayName || (user.email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
+        await signInWithEmailAndPassword(auth, email, password);
         setIsLoginOpen(false);
         triggerToast("Logged in securely via Firebase Auth!");
         setEmail("");
@@ -113,16 +83,13 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
       const foundUser = users.find((u: any) => u.email === lowercaseEmail && u.password === password);
       
       if (foundUser) {
-        setIsLoggedIn(true);
-        setActiveUserEmail(lowercaseEmail);
-        setName(foundUser.name);
-        
         // Save local session
         localStorage.setItem("noirkart_active_session", JSON.stringify({
           email: lowercaseEmail,
           name: foundUser.name
         }));
 
+        loginUser(lowercaseEmail, foundUser.name);
         setIsLoginOpen(false);
         triggerToast(`Welcome back, ${foundUser.name}! (Offline Session Restored)`);
         setEmail("");
@@ -148,9 +115,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         // Sync Display Name in profile
         await updateProfile(user, { displayName: name });
 
-        setIsLoggedIn(true);
-        setActiveUserEmail(user.email || "");
-        setName(name);
         setIsLoginOpen(false);
         triggerToast(`Account created securely! Welcome, ${name}.`);
         setName("");
@@ -174,10 +138,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
       const newUser = { name, email: lowercaseEmail, password };
       users.push(newUser);
       localStorage.setItem("noirkart_users", JSON.stringify(users));
-
-      setIsLoggedIn(true);
-      setActiveUserEmail(lowercaseEmail);
-      setName(name);
       
       // Save local session
       localStorage.setItem("noirkart_active_session", JSON.stringify({
@@ -185,6 +145,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         name
       }));
 
+      loginUser(lowercaseEmail, name);
       setIsLoginOpen(false);
       triggerToast(`Account created locally! Welcome, ${name}.`);
       setName("");
@@ -197,9 +158,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     if (isFirebaseConfigured && auth) {
       try {
         await signOut(auth);
-        setIsLoggedIn(false);
-        setActiveUserEmail("");
-        setName("");
         setShowDropdown(false);
         triggerToast("Logged out securely from Firebase.");
       } catch (err: any) {
@@ -207,10 +165,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         alert(`Failed to sign out: ${err.message}`);
       }
     } else {
-      setIsLoggedIn(false);
-      setActiveUserEmail("");
-      setName("");
-      localStorage.removeItem("noirkart_active_session");
+      logoutUser();
       setShowDropdown(false);
       triggerToast("Logged out successfully.");
     }
@@ -220,12 +175,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     if (isFirebaseConfigured && auth) {
       try {
         const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        setIsLoggedIn(true);
-        setActiveUserEmail(user.email || "");
-        setName(user.displayName || "Google User");
+        await signInWithPopup(auth, provider);
         setIsLoginOpen(false);
         triggerToast("Signed in securely with Google Auth!");
       } catch (err: any) {
@@ -236,16 +186,13 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
       }
     } else {
       // Offline local simulated Google Login
-      setIsLoggedIn(true);
-      setActiveUserEmail("google.user@noirkart.com");
-      setName("Google User");
-      
       // Save local session
       localStorage.setItem("noirkart_active_session", JSON.stringify({
         email: "google.user@noirkart.com",
         name: "Google User"
       }));
 
+      loginUser("google.user@noirkart.com", "Google User");
       setIsLoginOpen(false);
       triggerToast("Signed in securely with Google! (Simulated Offline Session)");
     }
@@ -253,16 +200,13 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
   const handleAppleLogin = () => {
     // Offline local simulated Apple Login
-    setIsLoggedIn(true);
-    setActiveUserEmail("apple.user@noirkart.com");
-    setName("Apple User");
-    
     // Save local session
     localStorage.setItem("noirkart_active_session", JSON.stringify({
       email: "apple.user@noirkart.com",
       name: "Apple User"
     }));
 
+    loginUser("apple.user@noirkart.com", "Apple User");
     setIsLoginOpen(false);
     triggerToast("Signed in securely with Apple! (Simulated Offline Session)");
   };
