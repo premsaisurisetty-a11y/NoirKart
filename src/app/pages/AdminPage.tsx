@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, Trash2, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Trash2, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage, isFirebaseConfigured } from "../lib/firebase";
 
 interface AdminPageProps {
   onBack: () => void;
@@ -21,6 +23,130 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [image, setImage] = useState("");
   const [buyLink, setBuyLink] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // File Uploader state
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  // Handle drag events
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  // Handle drop events
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      await handleImageUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  // Handle file select
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      await handleImageUpload(e.target.files[0]);
+    }
+  };
+
+  // Handle image upload logic (Firebase Storage or Base64 FileReader Fallback)
+  const handleImageUpload = async (file: File) => {
+    // 1. Validation
+    if (!file.type.startsWith("image/")) {
+      alert("Invalid file format. Please upload an image file (PNG, JPG, JPEG, WEBP, SVG, etc.).");
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert("File size exceeds 5MB limit. Please upload a smaller image.");
+      return;
+    }
+
+    // Set local preview instantly
+    const localUrl = URL.createObjectURL(file);
+    setPreviewUrl(localUrl);
+    setImage(localUrl); // Temporarily set preview url to satisfy form submit check
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    if (isFirebaseConfigured && storage) {
+      try {
+        const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Firebase Storage Upload Error:", error);
+            alert(`Cloud upload failed: ${error.message}. Falling back to local Base64 encoding.`);
+            encodeAsBase64(file);
+          },
+          async () => {
+            try {
+              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              setImage(downloadUrl);
+              setPreviewUrl(downloadUrl);
+              setUploading(false);
+              triggerToast("Image uploaded to Firebase Storage successfully!");
+            } catch (err: any) {
+              console.error("Failed to get download URL:", err);
+              encodeAsBase64(file);
+            }
+          }
+        );
+      } catch (err: any) {
+        console.error("Cloud storage upload setup failed:", err);
+        encodeAsBase64(file);
+      }
+    } else {
+      encodeAsBase64(file);
+    }
+  };
+
+  // Convert image to Base64 data URL
+  const encodeAsBase64 = (file: File) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      setImage(base64data);
+      setPreviewUrl(base64data);
+      setUploading(false);
+      triggerToast("Image encoded locally successfully (Offline Fallback).");
+    };
+    reader.onerror = (error) => {
+      console.error("Error reading file as Base64:", error);
+      alert("Failed to read image file locally.");
+      setUploading(false);
+      setPreviewUrl("");
+      setImage("");
+    };
+  };
+
+  const handleResetImage = () => {
+    setImage("");
+    setPreviewUrl("");
+    setUploadProgress(0);
+    setUploading(false);
+  };
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -70,6 +196,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setUnit("1 piece");
     setRating("4.8");
     setImage("");
+    setPreviewUrl("");
     setBuyLink("");
   };
 
@@ -229,14 +356,94 @@ export function AdminPage({ onBack }: AdminPageProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    placeholder="Leave empty for generic default image"
-                    value={image}
-                    onChange={(e) => setImage(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
-                  />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Product Image</label>
+                  
+                  {previewUrl ? (
+                    /* Thumbnail Preview */
+                    <div className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
+                      <img
+                        src={previewUrl}
+                        alt="Product upload preview"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={handleResetImage}
+                          className="p-2.5 bg-red-600/95 text-white rounded-full hover:bg-red-700 transition-all transform scale-90 group-hover:scale-100 duration-300 shadow-md cursor-pointer"
+                          title="Remove Image"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                      
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white px-4">
+                          <Loader2 className="animate-spin text-[#0c831f] mb-2" size={28} />
+                          <p className="text-xs font-semibold">Uploading to Cloud Storage...</p>
+                          <div className="w-3/4 bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden border border-gray-800">
+                            <div 
+                              className="bg-[#0c831f] h-full transition-all duration-300 rounded-full" 
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-mono mt-1 text-gray-300">{uploadProgress}%</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Drag & Drop Area */
+                    <div
+                      onDragEnter={handleDrag}
+                      onDragOver={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDrop={handleDrop}
+                      className={`relative border-2 border-dashed rounded-xl p-6 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer min-h-[140px] text-center ${
+                        dragActive
+                          ? "border-[#0c831f] bg-green-50/50 scale-[0.99] shadow-inner"
+                          : "border-gray-200 hover:border-[#0c831f] hover:bg-gray-50/50"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      
+                      <div className="p-2.5 bg-gray-50 rounded-full text-gray-400 mb-2">
+                        <UploadCloud size={24} />
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700">
+                        Drag and drop your image, or <span className="text-[#0c831f] underline">browse</span>
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        Supports PNG, JPG, JPEG, WEBP, SVG (Max 5MB)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Manual paste field */}
+                  <div className="mt-2">
+                    <details className="group">
+                      <summary className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 cursor-pointer list-none flex items-center gap-1 select-none">
+                        <span className="transition-transform duration-200 group-open:rotate-90">▶</span>
+                        Or paste direct image URL instead
+                      </summary>
+                      <div className="mt-1.5 pl-2.5 border-l-2 border-gray-100">
+                        <input
+                          type="url"
+                          placeholder="e.g. https://images.unsplash.com/..."
+                          value={image}
+                          onChange={(e) => {
+                            setImage(e.target.value);
+                            setPreviewUrl(e.target.value);
+                          }}
+                          className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-xs"
+                        />
+                      </div>
+                    </details>
+                  </div>
                 </div>
 
                 <div>
