@@ -56,7 +56,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-6">
           <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight md:leading-tight mb-8">
-            Curated premium gear. Discover best direct <span className="text-yellow-300">merchant deals</span>. noirkart it!
+            Curated premium gear. Discover best direct <span className="text-black">merchant deals</span>. noirkart it!
           </motion.h1>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1 }}
