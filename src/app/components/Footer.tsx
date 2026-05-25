@@ -26,7 +26,7 @@ export function Footer() {
                 alt="noirkart logo"
                 className="w-8 h-8 rounded-lg object-cover border border-gray-100 shadow-xs"
               />
-              <h2 className="text-2xl font-bold text-[#0c831f] tracking-tight">noirkart</h2>
+              <h2 className="text-2xl font-normal text-[#0c831f] tracking-wide" style={{ fontFamily: "'Titan One', cursive" }}>noirkart</h2>
             </div>
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
               Your ultimate curated directory for premium product designs and handpicked deals. We find and verify the best merchant purchase links so you don't have to. We do not deliver items directly.

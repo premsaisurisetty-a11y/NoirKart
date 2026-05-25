@@ -227,7 +227,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
                 alt="noirkart logo"
                 className="w-9 h-9 rounded-lg object-cover border border-gray-200 shadow-xs"
               />
-              <h1 className="text-2xl font-bold text-[#0c831f] tracking-tight hidden sm:block">noirkart</h1>
+              <h1 className="text-2xl font-normal text-[#0c831f] hidden sm:block tracking-wide" style={{ fontFamily: "'Titan One', cursive" }}>noirkart</h1>
             </motion.div>
 
             <div className="hidden md:flex items-center gap-2 text-sm">
