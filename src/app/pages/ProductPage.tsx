@@ -4,9 +4,13 @@ import { Button } from "../components/Button";
 import { Product, ProductCard } from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
 
-interface ProductPageProps { product: Product; onBack: () => void; }
+interface ProductPageProps { 
+  product: Product; 
+  onBack: () => void; 
+  onProductClick?: (product: Product) => void;
+}
 
-export function ProductPage({ product, onBack }: ProductPageProps) {
+export function ProductPage({ product, onBack, onProductClick }: ProductPageProps) {
   const { cart, addToCart, removeFromCart, products } = useCart();
   const isSaved = cart.some((item) => item.id === product.id);
   const handleSave = () => { if (isSaved) removeFromCart(product.id); else addToCart(product); };
@@ -85,7 +89,13 @@ export function ProductPage({ product, onBack }: ProductPageProps) {
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-4">Similar Curations</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-              {relatedProducts.map((rp) => <ProductCard key={rp.id} product={rp} onViewDetails={onBack} />)}
+              {relatedProducts.map((rp) => (
+                <ProductCard 
+                  key={rp.id} 
+                  product={rp} 
+                  onViewDetails={onProductClick ? onProductClick : onBack} 
+                />
+              ))}
             </div>
           </div>
         )}

@@ -61,7 +61,7 @@ function AppContent() {
       )}
 
       {currentPage === "product" && selectedProduct && (
-        <ProductPage product={selectedProduct} onBack={handleBackToHome} />
+        <ProductPage product={selectedProduct} onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
       {currentPage === "cart" && <CartPage onBack={handleBackToHome} />}
