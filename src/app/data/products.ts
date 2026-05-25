@@ -10,7 +10,8 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=premium+wireless+headphones"
   },
   {
     id: 2,
@@ -21,7 +22,8 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     category: "Fashion",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=luxury+chronograph+watch"
   },
   {
     id: 3,
@@ -32,7 +34,8 @@ export const featuredProducts: Product[] = [
     rating: 4.7,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=mechanical+keyboard+pro"
   },
   {
     id: 4,
@@ -43,7 +46,8 @@ export const featuredProducts: Product[] = [
     rating: 4.6,
     category: "Fashion",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1589642380614-4a8c2147b857?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1589642380614-4a8c2147b857?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=designer+aviator+sunglasses"
   },
   {
     id: 5,
@@ -54,7 +58,8 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1599669454699-248893623440?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1599669454699-248893623440?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=pro+studio+headphones"
   },
   {
     id: 6,
@@ -65,7 +70,8 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=smart+luxury+watch"
   },
   {
     id: 7,
@@ -76,7 +82,8 @@ export const featuredProducts: Product[] = [
     rating: 4.7,
     category: "Electronics",
     unit: "1 set",
-    image: "https://images.unsplash.com/photo-1519086588705-c935fdedcc14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1519086588705-c935fdedcc14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=wireless+mouse+keyboard+combo"
   },
   {
     id: 8,
@@ -87,7 +94,8 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     category: "Fashion",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1774791697894-42dacd95807d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1774791697894-42dacd95807d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=gold+designer+sunglasses"
   },
   {
     id: 9,
@@ -98,7 +106,8 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1641048930621-ab5d225ae5b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1641048930621-ab5d225ae5b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=premium+noise+cancelling+headphones"
   },
   {
     id: 10,
@@ -109,7 +118,8 @@ export const featuredProducts: Product[] = [
     rating: 4.7,
     category: "Fashion",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1587925358603-c2eea5305bbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1587925358603-c2eea5305bbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=classic+chronograph+watch"
   },
   {
     id: 11,
@@ -120,7 +130,8 @@ export const featuredProducts: Product[] = [
     rating: 4.6,
     category: "Electronics",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=ergonomic+wireless+mouse"
   },
   {
     id: 12,
@@ -131,7 +142,8 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Fashion",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1732139637224-95da5661d5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+    image: "https://images.unsplash.com/photo-1732139637224-95da5661d5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    buyLink: "https://www.amazon.in/s?k=polarized+sports+sunglasses"
   }
 ];
 

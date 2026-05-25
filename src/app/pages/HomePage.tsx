@@ -127,38 +127,40 @@ export function HomePage({ onProductClick }: HomePageProps) {
         </section>
 
         <section className="mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-2xl p-8 md:p-12 text-white text-center">
-            <h2 className="text-2xl md:text-4xl font-bold mb-3">Download PREM NEXUS App</h2>
-            <p className="text-base md:text-lg mb-6 opacity-90">Get exclusive deals and faster checkout</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="bg-white text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                📱 Download on App Store
-              </button>
-              <button className="bg-white text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                📲 Get it on Google Play
+          <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-2xl p-8 md:p-12 text-white text-center shadow-lg">
+            <h2 className="text-2xl md:text-4xl font-bold mb-3">Never Miss a Premium Deal</h2>
+            <p className="text-base md:text-lg mb-6 opacity-90">Join our newsletter to receive weekly curations of the web's best offers.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="px-4 py-3 rounded-lg bg-white/95 text-gray-800 focus:outline-none focus:ring-2 focus:ring-white flex-1 text-sm border-none shadow-sm"
+              />
+              <button className="bg-[#0c831f] hover:bg-[#0a6b1a] text-white px-6 py-3 rounded-lg font-semibold transition-colors cursor-pointer shadow-sm">
+                Subscribe
               </button>
             </div>
           </div>
         </section>
 
-        <section className="mb-8 bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Why Choose PREM NEXUS?</h2>
+        <section className="mb-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Why Trust noirkart?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: "⚡",
-                title: "10 Minute Delivery",
-                description: "Get your products delivered in just 10 minutes"
+                icon: "🔍",
+                title: "Vetted Recommendations",
+                description: "Every deal is thoroughly verified and handpicked by our expert catalog curators."
               },
               {
-                icon: "💯",
-                title: "100% Quality",
-                description: "All products are handpicked and quality assured"
+                icon: "🔗",
+                title: "Verified Merchant Links",
+                description: "All product links point directly to secure official stores and vetted merchants."
               },
               {
-                icon: "💰",
-                title: "Best Prices",
-                description: "Get the best deals and discounts on all products"
+                icon: "💎",
+                title: "Premium Design Curations",
+                description: "We focus on showcasing high-end, top-tier aesthetic products of exceptional quality."
               }
             ].map((feature, index) => (
               <motion.div
@@ -171,7 +173,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
               >
                 <div className="text-5xl mb-3">{feature.icon}</div>
                 <h3 className="font-bold text-gray-800 mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600">{feature.description}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>

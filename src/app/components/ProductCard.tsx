@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { Heart } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
 export interface Product {
   id: number;
@@ -12,105 +12,106 @@ export interface Product {
   unit?: string;
   originalPrice?: number;
   discount?: string;
+  buyLink?: string;
 }
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (product: Product) => void;
   onViewDetails?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(0);
+export function ProductCard({ product, onViewDetails }: ProductCardProps) {
+  const { cart, addToCart, removeFromCart } = useCart();
+  const isSaved = cart.some((item) => item.id === product.id);
 
-  const handleAdd = (e: React.MouseEvent) => {
+  const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setQuantity(1);
-    onAddToCart?.(product);
+    if (isSaved) {
+      removeFromCart(product.id);
+    } else {
+      addToCart(product);
+    }
   };
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const handleBuy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setQuantity(quantity + 1);
-    onAddToCart?.(product);
-  };
-
-  const handleDecrement = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (quantity > 0) {
-      setQuantity(quantity - 1);
+    if (product.buyLink) {
+      window.open(product.buyLink, "_blank", "noopener,noreferrer");
+    } else {
+      window.open("https://www.amazon.in", "_blank", "noopener,noreferrer");
     }
   };
 
   return (
     <motion.div
-      className="blinkit-card p-3 cursor-pointer transition-all hover:shadow-lg"
-      whileHover={{ y: -2 }}
+      className="blinkit-card p-3 cursor-pointer transition-all hover:shadow-lg flex flex-col justify-between h-full bg-white rounded-xl border border-gray-100"
+      whileHover={{ y: -4 }}
       onClick={() => onViewDetails?.(product)}
     >
-      <div className="relative mb-3">
-        <div className="aspect-square rounded-lg overflow-hidden bg-gray-50">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        {product.discount && (
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
-            {product.discount}
+      <div>
+        <div className="relative mb-3">
+          <div className="aspect-square rounded-lg overflow-hidden bg-gray-50">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
           </div>
-        )}
-        <div className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md">
-          <span className="text-xs">⚡ 10 min</span>
+          {product.discount && (
+            <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+              {product.discount}
+            </div>
+          )}
+          <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-xs rounded-full px-2 py-0.5 shadow-sm border border-gray-100">
+            <span className="text-[10px] font-semibold text-gray-700 flex items-center gap-1">
+              🔗 Deal
+            </span>
+          </div>
+        </div>
+
+        <div className="mb-2">
+          <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+            {product.category}
+          </span>
+          <h3 className="text-sm font-semibold text-gray-800 mt-0.5 mb-1 line-clamp-2 leading-snug min-h-[40px]">
+            {product.name}
+          </h3>
+          <p className="text-xs text-gray-400">{product.unit || "1 unit"}</p>
         </div>
       </div>
 
-      <div className="mb-2">
-        <h3 className="text-sm font-semibold text-gray-800 mb-1 line-clamp-2 leading-tight">
-          {product.name}
-        </h3>
-        <p className="text-xs text-gray-500">{product.unit || "1 unit"}</p>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-base font-bold text-gray-900">₹{product.price}</span>
+      <div className="mt-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
             {product.originalPrice && (
               <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
             )}
           </div>
         </div>
 
-        {quantity === 0 ? (
-          <motion.button
-            onClick={handleAdd}
-            className="bg-white border-2 border-[#0c831f] text-[#0c831f] px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-[#0c831f] hover:text-white transition-colors"
-            whileTap={{ scale: 0.95 }}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleBuy}
+            className="flex-1 bg-[#0c831f] hover:bg-[#0a6b1a] text-white py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1 transition-all shadow-xs hover:shadow-md cursor-pointer"
           >
-            ADD
-          </motion.button>
-        ) : (
-          <div className="flex items-center gap-2 bg-[#0c831f] rounded-lg px-2 py-1">
-            <motion.button
-              onClick={handleDecrement}
-              className="text-white p-1"
-              whileTap={{ scale: 0.9 }}
-            >
-              <Minus size={14} />
-            </motion.button>
-            <span className="text-white font-bold min-w-[20px] text-center text-sm">{quantity}</span>
-            <motion.button
-              onClick={handleIncrement}
-              className="text-white p-1"
-              whileTap={{ scale: 0.9 }}
-            >
-              <Plus size={14} />
-            </motion.button>
-          </div>
-        )}
+            Buy Now ↗
+          </button>
+          
+          <button
+            onClick={handleSave}
+            className={`p-2 rounded-lg border transition-all cursor-pointer ${
+              isSaved
+                ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100"
+                : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            }`}
+            title={isSaved ? "Remove from Watchlist" : "Save Deal"}
+          >
+            <Heart size={16} className={isSaved ? "fill-red-500" : ""} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
 }
+

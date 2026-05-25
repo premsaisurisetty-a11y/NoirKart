@@ -1,32 +1,29 @@
 import { motion } from "motion/react";
-import { Trash2, Plus, Minus, ShoppingBag, ChevronLeft, Tag } from "lucide-react";
+import { Trash2, ShoppingBag, ChevronLeft, ExternalLink, Info } from "lucide-react";
 import { Button } from "../components/Button";
 import { useCart } from "../context/CartContext";
-import { useState } from "react";
 
 interface CartPageProps {
   onBack: () => void;
 }
 
 export function CartPage({ onBack }: CartPageProps) {
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
-  const [promoCode, setPromoCode] = useState("");
-  const [discount, setDiscount] = useState(0);
+  const { cart, removeFromCart, cartTotal, clearCart } = useCart();
 
-  const deliveryFee = cartTotal > 99 ? 0 : 20;
-  const total = cartTotal - discount + deliveryFee;
-
-  const handleApplyPromo = () => {
-    if (promoCode.toLowerCase() === "save10") {
-      setDiscount(cartTotal * 0.1);
-      alert("Promo code applied! ₹" + (cartTotal * 0.1).toFixed(0) + " discount");
-    } else {
-      alert("Invalid promo code");
-    }
+  const handleOpenAll = () => {
+    if (cart.length === 0) return;
+    
+    // Alert the user and open links in tabs
+    alert(`Opening ${cart.length} verified deals in new browser tabs!`);
+    cart.forEach(item => {
+      const url = item.buyLink || "https://www.amazon.in";
+      window.open(url, "_blank", "noopener,noreferrer");
+    });
   };
 
-  const handleCheckout = () => {
-    alert("Proceeding to checkout... (This is a demo)");
+  const handleBuySingle = (url?: string) => {
+    const targetUrl = url || "https://www.amazon.in";
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   };
 
   if (cart.length === 0) {
@@ -37,12 +34,12 @@ export function CartPage({ onBack }: CartPageProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="bg-white rounded-2xl shadow-sm p-12">
+            <div className="bg-white rounded-2xl shadow-sm p-12 border border-gray-100">
               <ShoppingBag className="mx-auto mb-6 text-gray-300" size={80} />
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Your Cart is Empty</h2>
-              <p className="text-gray-600 mb-8">Add items to get started</p>
-              <Button variant="primary" size="lg" onClick={onBack}>
-                Start Shopping
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Your Watchlist is Empty</h2>
+              <p className="text-gray-500 mb-8">Save premium handpicked deals to compare and track them here.</p>
+              <Button variant="primary" size="lg" onClick={onBack} className="cursor-pointer">
+                Explore Premium Curations
               </Button>
             </div>
           </motion.div>
@@ -56,26 +53,27 @@ export function CartPage({ onBack }: CartPageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-[#0c831f] mb-6 transition-colors"
+          className="flex items-center gap-2 text-gray-600 hover:text-[#0c831f] mb-6 transition-colors cursor-pointer"
         >
           <ChevronLeft size={20} />
-          Continue Shopping
+          Back to Directory
         </button>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">My Cart</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Saved Deals</h1>
+        <p className="text-gray-500 mb-8">Compare and visit official merchant stores to purchase your shortlisted items.</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item, index) => (
               <motion.div
                 key={item.id}
-                className="bg-white rounded-xl shadow-sm p-4"
+                className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <div className="flex gap-4">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                <div className="flex gap-4 items-center w-full sm:w-auto">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -83,120 +81,87 @@ export function CartPage({ onBack }: CartPageProps) {
                     />
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{item.name}</h3>
-                        <p className="text-sm text-gray-500">{item.unit}</p>
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="p-2 rounded-lg hover:bg-red-50 transition-colors ml-2"
-                      >
-                        <Trash2 className="text-red-500" size={18} />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-3 py-1.5">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="text-gray-600 hover:text-[#0c831f]"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="font-bold text-gray-900 min-w-[24px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="text-gray-600 hover:text-[#0c831f]"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </div>
-
-                      <span className="text-lg font-bold text-gray-900">
-                        ₹{(item.price * item.quantity).toFixed(0)}
-                      </span>
-                    </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{item.category}</span>
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-base">{item.name}</h3>
+                    <p className="text-xs text-gray-400">{item.unit || "1 unit"}</p>
+                    <span className="text-base font-bold text-gray-900 mt-2 block">
+                      ₹{item.price}
+                    </span>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                  <button
+                    onClick={() => handleBuySingle(item.buyLink)}
+                    className="flex items-center gap-1.5 bg-[#0c831f] hover:bg-[#0a6b1a] text-white py-2 px-4 rounded-lg font-semibold text-xs transition-colors cursor-pointer shadow-xs"
+                  >
+                    View Offer <ExternalLink size={14} />
+                  </button>
+
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="p-2.5 rounded-lg border border-gray-100 hover:border-red-100 hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                    title="Remove deal"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </motion.div>
             ))}
 
             <button
               onClick={clearCart}
-              className="text-sm text-red-500 hover:text-red-600 transition-colors flex items-center gap-2"
+              className="text-xs text-red-500 hover:text-red-600 transition-colors flex items-center gap-1.5 cursor-pointer mt-4"
             >
-              <Trash2 size={16} />
-              Clear Cart
+              <Trash2 size={14} />
+              Clear Saved Deals Watchlist
             </button>
           </div>
 
           <div className="lg:col-span-1">
             <motion.div
-              className="bg-white rounded-xl shadow-sm p-6 sticky top-32"
+              className="bg-white rounded-xl shadow-sm p-6 sticky top-32 border border-gray-100"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Bill Details</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Watchlist Summary</h2>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>₹{cartTotal.toFixed(0)}</span>
+              <div className="space-y-3 mb-6 pb-4 border-b border-gray-100">
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Saved Deals</span>
+                  <span className="font-semibold text-gray-800">{cart.length} items</span>
                 </div>
 
-                {discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span>-₹{discount.toFixed(0)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between text-gray-600">
-                  <span>Delivery Fee</span>
-                  <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
-                </div>
-
-                <div className="border-t border-gray-200 pt-3">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span className="text-gray-900">To Pay</span>
-                    <span className="text-gray-900">₹{total.toFixed(0)}</span>
-                  </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Total Est. Value</span>
+                  <span className="font-semibold text-gray-800">₹{cartTotal.toFixed(0)}</span>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
-                  <Tag size={16} />
-                  Apply Promo Code
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Enter code"
-                    className="flex-1 px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
-                  />
-                  <Button variant="secondary" size="sm" onClick={handleApplyPromo}>
-                    Apply
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Try: SAVE10 for 10% off</p>
-              </div>
-
-              <Button variant="primary" size="lg" className="w-full mb-4" onClick={handleCheckout}>
-                Proceed to Pay
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full mb-4 font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow"
+                onClick={handleOpenAll}
+              >
+                Open All Links ↗
               </Button>
 
-              {cartTotal < 99 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-                  Add ₹{(99 - cartTotal).toFixed(0)} more for FREE delivery
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-800 space-y-2 mb-6">
+                <div className="flex gap-2 items-start font-semibold text-blue-900">
+                  <Info size={16} className="flex-shrink-0 mt-0.5" />
+                  <span>External Purchases</span>
                 </div>
-              )}
+                <p className="leading-relaxed">
+                  noirkart does not take payments or handle delivery. You will complete your purchases securely on the respective merchant store websites.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-4 text-[10px] text-gray-500 leading-relaxed border border-gray-100">
+                <span className="font-bold text-gray-700 block mb-1">Affiliate & Commission Notice</span>
+                If you purchase a product through one of our curated external deals, we may receive a small affiliate commission from the merchant platform. This is at absolutely no extra cost to you and helps fund our premium catalog design curations!
+              </div>
             </motion.div>
           </div>
         </div>
@@ -204,3 +169,4 @@ export function CartPage({ onBack }: CartPageProps) {
     </div>
   );
 }
+
