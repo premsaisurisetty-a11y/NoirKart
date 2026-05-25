@@ -133,25 +133,30 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setUploading(true);
     setUploadProgress(0);
 
-    // Compress the image before uploading or converting to Base64 to ensure it easily fits within the 1MB Firestore document limit
-    let file = rawFile;
-    try {
-      file = await compressImage(rawFile);
-    } catch (e) {
-      console.error("Image compression failed, using original file:", e);
-    }
-
-    // Set local preview instantly
-    const localUrl = URL.createObjectURL(file);
+    // Set local preview instantly with the original full-size, high-quality image
+    const localUrl = URL.createObjectURL(rawFile);
     setPreviewUrl(localUrl);
     setImage(localUrl); // Temporarily set preview url to satisfy form submit check
 
+    // Helper function to compress and encode image to Base64 in case of fallback
+    const handleBase64Fallback = async () => {
+      try {
+        // Compress to high-quality but web-friendly size (1600px max, 0.85 quality) to ensure Base64 fits within 1MB Firestore limit
+        const compressedFile = await compressImage(rawFile, 1600, 1600, 0.85);
+        encodeAsBase64(compressedFile);
+      } catch (err) {
+        console.error("Compression fallback failed, using original file:", err);
+        encodeAsBase64(rawFile);
+      }
+    };
+
     if (isFirebaseConfigured && storage) {
       try {
-        const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+        // Upload the ORIGINAL full-size, high-quality file to Firebase Storage
+        const storageRef = ref(storage, `products/${Date.now()}_${rawFile.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, rawFile);
 
-        // Watchdog timer: if upload is stuck at 0% for 7 seconds, fall back
+        // Watchdog timer: if upload is stuck at 0% for 8 seconds, fall back
         let hasProgressed = false;
         const timeoutId = setTimeout(() => {
           if (!hasProgressed) {
@@ -162,10 +167,10 @@ export function AdminPage({ onBack }: AdminPageProps) {
               "2. Confirm your Firebase Storage Rules allow public access."
             );
             uploadTask.cancel();
-            encodeAsBase64(file);
-            triggerToast("Cloud upload timed out. Switched to high-performance local encoding! ⚡");
+            handleBase64Fallback();
+            triggerToast("Cloud upload timed out. Switched to optimized local fallback! ⚡");
           }
-        }, 7000);
+        }, 8000);
 
         uploadTask.on(
           "state_changed",
@@ -186,8 +191,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
               return;
             }
             console.error("Firebase Storage Upload Error:", error);
-            triggerToast("Cloud upload failed. Automatically fallback to local encoding.");
-            encodeAsBase64(file);
+            triggerToast("Cloud upload failed. Switched to local fallback.");
+            handleBase64Fallback();
           },
           async () => {
             clearTimeout(timeoutId);
@@ -196,19 +201,19 @@ export function AdminPage({ onBack }: AdminPageProps) {
               setImage(downloadUrl);
               setPreviewUrl(downloadUrl);
               setUploading(false);
-              triggerToast("Image uploaded to Firebase Storage successfully!");
+              triggerToast("Original high-quality image uploaded to Firebase successfully! 📸");
             } catch (err: any) {
               console.error("Failed to get download URL:", err);
-              encodeAsBase64(file);
+              handleBase64Fallback();
             }
           }
         );
       } catch (err: any) {
         console.error("Cloud storage upload setup failed:", err);
-        encodeAsBase64(file);
+        handleBase64Fallback();
       }
     } else {
-      encodeAsBase64(file);
+      handleBase64Fallback();
     }
   };
 
