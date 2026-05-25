@@ -42,8 +42,8 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
     >
       <div>
         <div className="relative mb-3">
-          <div className="aspect-square rounded-lg overflow-hidden bg-gray-50">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+          <div className="aspect-square rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center p-1.5">
+            <img src={product.image} alt={product.name} className="max-w-full max-h-full object-contain transition-transform duration-500 hover:scale-105" />
           </div>
           {product.discount && (
             <div className="absolute top-2 left-2 bg-[#E23744] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">

@@ -520,11 +520,11 @@ export function AdminPage({ onBack }: AdminPageProps) {
                   
                   {previewUrl ? (
                     /* Thumbnail Preview */
-                    <div className="relative group rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#F8F8F8] aspect-video flex items-center justify-center">
+                    <div className="relative group rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#F8F8F8] aspect-video flex items-center justify-center p-2">
                       <img
                         src={previewUrl}
                         alt="Product upload preview"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button
@@ -665,8 +665,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
                     {products.map((p) => (
                       <tr key={p.id} className="text-sm">
                         <td className="py-4.5 pr-3">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F8F8F8] border border-[#E8E8E8] flex-shrink-0">
-                            <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F8F8F8] border border-[#E8E8E8] flex-shrink-0 flex items-center justify-center p-0.5">
+                            <img src={p.image} alt={p.name} className="max-w-full max-h-full object-contain" />
                           </div>
                         </td>
                         <td className="py-4.5 min-w-[200px] pr-3">

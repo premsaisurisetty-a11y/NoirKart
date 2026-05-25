@@ -23,8 +23,8 @@ export function ProductPage({ product, onBack }: ProductPageProps) {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 border border-gray-100">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
             <div>
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100 flex items-center justify-center p-3">
+                <img src={product.image} alt={product.name} className="max-w-full max-h-full object-contain" />
               </div>
               {product.discount && (
                 <div className="inline-block bg-[#E23744] text-white px-4 py-1.5 rounded-lg font-bold text-sm shadow">{product.discount}</div>
