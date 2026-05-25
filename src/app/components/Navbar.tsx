@@ -7,7 +7,9 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 
 interface NavbarProps {
@@ -212,6 +214,57 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
       setShowDropdown(false);
       triggerToast("Logged out successfully.");
     }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (isFirebaseConfigured && auth) {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        setIsLoggedIn(true);
+        setActiveUserEmail(user.email || "");
+        setName(user.displayName || "Google User");
+        setIsLoginOpen(false);
+        triggerToast("Signed in securely with Google Auth!");
+      } catch (err: any) {
+        console.error("Firebase Google Auth Error:", err);
+        if (err.code !== "auth/popup-closed-by-user") {
+          alert(`Google login failed: ${err.message}`);
+        }
+      }
+    } else {
+      // Offline local simulated Google Login
+      setIsLoggedIn(true);
+      setActiveUserEmail("google.user@noirkart.com");
+      setName("Google User");
+      
+      // Save local session
+      localStorage.setItem("noirkart_active_session", JSON.stringify({
+        email: "google.user@noirkart.com",
+        name: "Google User"
+      }));
+
+      setIsLoginOpen(false);
+      triggerToast("Signed in securely with Google! (Simulated Offline Session)");
+    }
+  };
+
+  const handleAppleLogin = () => {
+    // Offline local simulated Apple Login
+    setIsLoggedIn(true);
+    setActiveUserEmail("apple.user@noirkart.com");
+    setName("Apple User");
+    
+    // Save local session
+    localStorage.setItem("noirkart_active_session", JSON.stringify({
+      email: "apple.user@noirkart.com",
+      name: "Apple User"
+    }));
+
+    setIsLoginOpen(false);
+    triggerToast("Signed in securely with Apple! (Simulated Offline Session)");
   };
 
   return (
@@ -499,12 +552,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <button
-                  onClick={() => {
-                    setIsLoggedIn(true);
-                    setName("Google User");
-                    setIsLoginOpen(false);
-                    triggerToast("Signed in securely with Google!");
-                  }}
+                  onClick={handleGoogleLogin}
                   className="flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-xs font-semibold text-gray-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -516,12 +564,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
                   Google
                 </button>
                 <button
-                  onClick={() => {
-                    setIsLoggedIn(true);
-                    setName("Apple User");
-                    setIsLoginOpen(false);
-                    triggerToast("Signed in securely with Apple!");
-                  }}
+                  onClick={handleAppleLogin}
                   className="flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-xs font-semibold text-gray-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
