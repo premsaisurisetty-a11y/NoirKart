@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ChevronRight, MapPin, Search } from "lucide-react";
+import { ChevronRight, Search, X } from "lucide-react";
 import { ProductCard, Product } from "../components/ProductCard";
 import { CategoryCard } from "../components/CategoryCard";
 import { useCart } from "../context/CartContext";
@@ -60,19 +60,17 @@ export function HomePage({ onProductClick }: HomePageProps) {
           </motion.h1>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="w-full max-w-3xl bg-white rounded-2xl p-2 shadow-xl flex flex-col md:flex-row items-center gap-2 border border-gray-200 text-gray-800">
-            <div className="flex items-center gap-2.5 px-4 py-2 border-b md:border-b-0 md:border-r border-gray-100 w-full md:w-1/3 text-left relative cursor-pointer group select-none">
-              <MapPin className="text-[#E23744] flex-shrink-0" size={20} />
-              <div className="flex-1 truncate">
-                <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Curation Hub</div>
-                <div className="text-sm font-bold text-gray-700 flex items-center gap-1">Delhi NCR, India <span className="text-gray-400 text-[10px]">▼</span></div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-2 w-full md:w-2/3">
-              <Search className="text-gray-400 flex-shrink-0" size={20} />
-              <input type="text" placeholder="Search studio headphones, mechanical keyboards, premium watches..."
+            className="w-full max-w-3xl bg-white rounded-2xl p-2 shadow-xl flex items-center gap-3 border border-gray-200 text-gray-800">
+            <div className="flex items-center gap-3 px-4 py-3 w-full">
+              <Search className="text-gray-400 flex-shrink-0" size={22} />
+              <input type="text" placeholder="Search headphones, keyboards, watches, fashion..."
                 className="w-full focus:outline-none text-sm bg-transparent placeholder-gray-400 text-gray-800"
                 value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-600 cursor-pointer flex-shrink-0">
+                  <X size={18} />
+                </button>
+              )}
             </div>
           </motion.div>
 
@@ -116,8 +114,17 @@ export function HomePage({ onProductClick }: HomePageProps) {
           </div>
         </section>
 
+        {searchQuery && filteredProducts.length === 0 && (
+          <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center mb-8">
+            <p className="text-4xl mb-3">🔍</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No results for "{searchQuery}"</h3>
+            <p className="text-gray-500 text-sm mb-4">Try a different search term or browse categories above.</p>
+            <button onClick={() => setSearchQuery("")} className="text-[#E23744] font-semibold text-sm hover:underline cursor-pointer">Clear search</button>
+          </div>
+        )}
+
         {populatedCategories.map((categoryName) => {
-          const categoryProducts = products.filter(p => p.category === categoryName);
+          const categoryProducts = filteredProducts.filter(p => p.category === categoryName);
           if (categoryProducts.length === 0) return null;
           return (
             <section key={categoryName} id={`category-section-${categoryName.toLowerCase()}`} className="mb-8 scroll-mt-32">

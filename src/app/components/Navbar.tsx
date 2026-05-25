@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
+import { Heart, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
@@ -148,16 +148,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
             <motion.div className="flex items-center cursor-pointer" whileHover={{ scale: 1.02 }} onClick={onLogoClick}>
               <img src="/Noirkart.png" alt="noirkart" className="h-14 w-auto object-contain" />
             </motion.div>
-
-            <div className="hidden md:flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 border border-gray-100">
-                <MapPin size={18} className="text-[#E23744]" />
-                <div className="text-left">
-                  <div className="text-xs text-gray-500">Verified Curated Links</div>
-                  <div className="font-semibold text-gray-800 flex items-center gap-1">Direct Purchases Only</div>
-                </div>
-              </div>
-            </div>
           </div>
 
 
