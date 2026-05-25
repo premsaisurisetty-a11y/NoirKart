@@ -1,6 +1,14 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Search, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { auth, isFirebaseConfigured } from "../lib/firebase";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  onAuthStateChanged
+} from "firebase/auth";
 
 interface NavbarProps {
   cartCount?: number;
@@ -23,6 +31,37 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
   const [showDropdown, setShowDropdown] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Monitor Authentication state changes (Firebase Auth with Offline Fallback)
+  useEffect(() => {
+    if (isFirebaseConfigured && auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLoggedIn(true);
+          setActiveUserEmail(user.email || "");
+          setName(user.displayName || (user.email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
+        } else {
+          setIsLoggedIn(false);
+          setActiveUserEmail("");
+          setName("");
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      // Offline/Local session restore
+      const session = localStorage.getItem("noirkart_active_session");
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          setIsLoggedIn(true);
+          setActiveUserEmail(parsed.email);
+          setName(parsed.name);
+        } catch (e) {
+          console.error("Failed to restore local session", e);
+        }
+      }
+    }
+  }, []);
+
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -30,48 +69,149 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     }, 3500);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       alert("Please fill in all fields.");
       return;
     }
-    
-    // Simulate Login
-    setIsLoggedIn(true);
-    const lowercaseEmail = email.toLowerCase();
-    setActiveUserEmail(lowercaseEmail);
-    if (lowercaseEmail === "admin@noirkart.com") {
-      setName("Admin Manager");
+
+    if (isFirebaseConfigured && auth) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        setIsLoggedIn(true);
+        setActiveUserEmail(user.email || "");
+        setName(user.displayName || (user.email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
+        setIsLoginOpen(false);
+        triggerToast("Logged in securely via Firebase Auth!");
+        setEmail("");
+        setPassword("");
+      } catch (err: any) {
+        console.error("Firebase Login Error:", err);
+        alert(`Authentication failed: ${err.message}`);
+      }
+    } else {
+      // Offline LocalStorage Accounts check
+      const lowercaseEmail = email.toLowerCase();
+      const storedUsers = localStorage.getItem("noirkart_users");
+      let users = storedUsers ? JSON.parse(storedUsers) : [];
+
+      // Pre-seed default admin if not existing
+      if (!users.some((u: any) => u.email === "admin@noirkart.com")) {
+        users.push({
+          name: "Admin Manager",
+          email: "admin@noirkart.com",
+          password: "admin"
+        });
+        localStorage.setItem("noirkart_users", JSON.stringify(users));
+      }
+
+      const foundUser = users.find((u: any) => u.email === lowercaseEmail && u.password === password);
+      
+      if (foundUser) {
+        setIsLoggedIn(true);
+        setActiveUserEmail(lowercaseEmail);
+        setName(foundUser.name);
+        
+        // Save local session
+        localStorage.setItem("noirkart_active_session", JSON.stringify({
+          email: lowercaseEmail,
+          name: foundUser.name
+        }));
+
+        setIsLoginOpen(false);
+        triggerToast(`Welcome back, ${foundUser.name}! (Offline Session Restored)`);
+        setEmail("");
+        setPassword("");
+      } else {
+        alert("Invalid email or password.\n\nHint: Use admin@noirkart.com / admin to unlock the Admin Control Panel, or sign up for a new account!");
+      }
     }
-    setIsLoginOpen(false);
-    triggerToast("Logged in successfully! Welcome back to noirkart.");
-    setEmail("");
-    setPassword("");
   };
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) {
       alert("Please fill in all fields.");
       return;
     }
-    
-    // Simulate Sign Up
-    setIsLoggedIn(true);
-    setActiveUserEmail(email.toLowerCase());
-    setIsLoginOpen(false);
-    triggerToast(`Account created! Welcome, ${name}.`);
-    setName("");
-    setEmail("");
-    setPassword("");
+
+    if (isFirebaseConfigured && auth) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Sync Display Name in profile
+        await updateProfile(user, { displayName: name });
+
+        setIsLoggedIn(true);
+        setActiveUserEmail(user.email || "");
+        setName(name);
+        setIsLoginOpen(false);
+        triggerToast(`Account created securely! Welcome, ${name}.`);
+        setName("");
+        setEmail("");
+        setPassword("");
+      } catch (err: any) {
+        console.error("Firebase Sign Up Error:", err);
+        alert(`Failed to create account: ${err.message}`);
+      }
+    } else {
+      // Offline LocalStorage signup
+      const lowercaseEmail = email.toLowerCase();
+      const storedUsers = localStorage.getItem("noirkart_users");
+      let users = storedUsers ? JSON.parse(storedUsers) : [];
+
+      if (users.some((u: any) => u.email === lowercaseEmail)) {
+        alert("An account with this email address already exists.");
+        return;
+      }
+
+      const newUser = { name, email: lowercaseEmail, password };
+      users.push(newUser);
+      localStorage.setItem("noirkart_users", JSON.stringify(users));
+
+      setIsLoggedIn(true);
+      setActiveUserEmail(lowercaseEmail);
+      setName(name);
+      
+      // Save local session
+      localStorage.setItem("noirkart_active_session", JSON.stringify({
+        email: lowercaseEmail,
+        name
+      }));
+
+      setIsLoginOpen(false);
+      triggerToast(`Account created locally! Welcome, ${name}.`);
+      setName("");
+      setEmail("");
+      setPassword("");
+    }
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setActiveUserEmail("");
-    setShowDropdown(false);
-    triggerToast("Logged out successfully. See you next time!");
+  const handleLogout = async () => {
+    if (isFirebaseConfigured && auth) {
+      try {
+        await signOut(auth);
+        setIsLoggedIn(false);
+        setActiveUserEmail("");
+        setName("");
+        setShowDropdown(false);
+        triggerToast("Logged out securely from Firebase.");
+      } catch (err: any) {
+        console.error("Firebase Signout Error:", err);
+        alert(`Failed to sign out: ${err.message}`);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setActiveUserEmail("");
+      setName("");
+      localStorage.removeItem("noirkart_active_session");
+      setShowDropdown(false);
+      triggerToast("Logged out successfully.");
+    }
   };
 
   return (
