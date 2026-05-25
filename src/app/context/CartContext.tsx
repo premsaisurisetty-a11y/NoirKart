@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Product } from "../components/ProductCard";
 import { featuredProducts } from "../data/products";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { db, isFirebaseConfigured } from "../lib/firebase";
+import { collection, getDocs, addDoc, deleteDoc, doc, query } from "firebase/firestore";
 
 interface CartItem extends Product {
   quantity: number;
@@ -28,7 +29,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Watchlist (Cart) state
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Product Catalog state (Persisted in LocalStorage & synced with Supabase if configured)
+  // Product Catalog state (Persisted in LocalStorage & synced with Firebase if configured)
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem("noirkart_products");
     if (saved) {
@@ -43,33 +44,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return featuredProducts;
   });
 
-  // Sync with Supabase on mount if configured
+  // Sync with Firebase Firestore on mount if configured
   useEffect(() => {
-    if (isSupabaseConfigured && supabase) {
+    if (isFirebaseConfigured && db) {
       const fetchProducts = async () => {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .order("id", { ascending: false });
+        try {
+          const productsCol = collection(db, "products");
+          const q = query(productsCol);
+          const querySnapshot = await getDocs(q);
+          const fetchedProducts: Product[] = [];
+          
+          querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            fetchedProducts.push({
+              id: Number(data.id) || docSnap.id,
+              name: data.name,
+              price: Number(data.price),
+              originalPrice: data.originalPrice ? Number(data.originalPrice) : undefined,
+              discount: data.discount || undefined,
+              rating: Number(data.rating),
+              category: data.category,
+              unit: data.unit,
+              image: data.image,
+              buyLink: data.buyLink
+            });
+          });
 
-        if (error) {
-          console.error("Failed to fetch products from Supabase:", error);
-        } else if (data) {
-          // Format standard Supabase column names
-          const formattedProducts: Product[] = data.map((row: any) => ({
-            id: row.id,
-            name: row.name,
-            price: Number(row.price),
-            originalPrice: row.original_price ? Number(row.original_price) : undefined,
-            discount: row.discount,
-            rating: Number(row.rating),
-            category: row.category,
-            unit: row.unit,
-            image: row.image,
-            buyLink: row.buy_link
-          }));
-          setProducts(formattedProducts);
-          localStorage.setItem("noirkart_products", JSON.stringify(formattedProducts));
+          // Sort by ID descending so newest appear first
+          fetchedProducts.sort((a, b) => Number(b.id) - Number(a.id));
+          
+          setProducts(fetchedProducts);
+          localStorage.setItem("noirkart_products", JSON.stringify(fetchedProducts));
+        } catch (error) {
+          console.error("Failed to fetch products from Firebase Firestore:", error);
         }
       };
 
@@ -107,73 +114,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart([]);
   };
 
-  // Add a product to the catalog (syncs with Supabase if configured)
+  // Add a product to the catalog (syncs with Firebase if configured)
   const addProduct = async (newProduct: Omit<Product, "id">) => {
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase
-        .from("products")
-        .insert([{
+    const nextId = products.length > 0 ? Math.max(...products.map((p) => Number(p.id) || 0)) + 1 : 1;
+    const productWithId: Product = { ...newProduct, id: nextId };
+
+    if (isFirebaseConfigured && db) {
+      try {
+        const productsCol = collection(db, "products");
+        await addDoc(productsCol, {
+          id: nextId,
           name: newProduct.name,
           price: newProduct.price,
-          original_price: newProduct.originalPrice,
-          discount: newProduct.discount,
+          originalPrice: newProduct.originalPrice || null,
+          discount: newProduct.discount || null,
           rating: newProduct.rating,
           category: newProduct.category,
           unit: newProduct.unit,
           image: newProduct.image,
-          buy_link: newProduct.buyLink
-        }])
-        .select();
-
-      if (error) {
-        console.error("Failed to insert product into Supabase:", error);
-        alert(`Failed to add product to database: ${error.message}`);
-        return;
-      }
-      
-      if (data && data[0]) {
-        const insertedRow = data[0];
-        const productWithId: Product = {
-          id: insertedRow.id,
-          name: insertedRow.name,
-          price: Number(insertedRow.price),
-          originalPrice: insertedRow.original_price ? Number(insertedRow.original_price) : undefined,
-          discount: insertedRow.discount,
-          rating: Number(insertedRow.rating),
-          category: insertedRow.category,
-          unit: insertedRow.unit,
-          image: insertedRow.image,
-          buyLink: insertedRow.buy_link
-        };
+          buyLink: newProduct.buyLink
+        });
+        
         setProducts((prev) => {
           const updated = [productWithId, ...prev];
           localStorage.setItem("noirkart_products", JSON.stringify(updated));
           return updated;
         });
         return;
+      } catch (error: any) {
+        console.error("Failed to insert product into Firebase:", error);
+        alert(`Failed to add product to database: ${error.message}`);
+        return;
       }
     }
 
     // LocalStorage Fallback
     setProducts((prev) => {
-      const nextId = prev.length > 0 ? Math.max(...prev.map((p) => p.id)) + 1 : 1;
-      const productWithId: Product = { ...newProduct, id: nextId };
       const updated = [productWithId, ...prev];
       localStorage.setItem("noirkart_products", JSON.stringify(updated));
       return updated;
     });
   };
 
-  // Delete a product from the catalog (syncs with Supabase if configured)
+  // Delete a product from the catalog (syncs with Firebase if configured)
   const deleteProduct = async (id: number) => {
-    if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", id);
+    if (isFirebaseConfigured && db) {
+      try {
+        const productsCol = collection(db, "products");
+        const q = query(productsCol);
+        const querySnapshot = await getDocs(q);
+        
+        let docIdToDelete = "";
+        querySnapshot.forEach((docSnap) => {
+          if (Number(docSnap.data().id) === id) {
+            docIdToDelete = docSnap.id;
+          }
+        });
 
-      if (error) {
-        console.error("Failed to delete product from Supabase:", error);
+        if (docIdToDelete) {
+          const docRef = doc(db, "products", docIdToDelete);
+          await deleteDoc(docRef);
+        }
+      } catch (error: any) {
+        console.error("Failed to delete product from Firebase:", error);
         alert(`Failed to delete product from database: ${error.message}`);
         return;
       }
@@ -223,5 +226,6 @@ export function useCart() {
   }
   return context;
 }
+
 
 
