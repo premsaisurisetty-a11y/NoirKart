@@ -20,7 +20,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <div className="mb-4">
-              <img src="/noirkart_logo.png" alt="noirkart" className="h-10 w-auto object-contain" />
+              <img src="/Noirkart.png" alt="noirkart" className="h-10 w-auto object-contain" />
             </div>
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
               Your ultimate curated directory for premium product designs and handpicked deals. We find and verify the best merchant purchase links so you don't have to.

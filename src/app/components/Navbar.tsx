@@ -147,7 +147,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <motion.div className="flex items-center cursor-pointer" whileHover={{ scale: 1.02 }} onClick={onLogoClick}>
-              <img src="/noirkart_logo.png" alt="noirkart" className="h-10 w-auto object-contain" />
+              <img src="/Noirkart.png" alt="noirkart" className="h-10 w-auto object-contain" />
             </motion.div>
 
             <div className="hidden md:flex items-center gap-2 text-sm">
