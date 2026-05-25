@@ -1,18 +1,75 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, Trash2, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2 } from "lucide-react";
+import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage, isFirebaseConfigured } from "../lib/firebase";
+
+// Helper function to compress images before uploading to prevent cloud errors and large Base64 Firestore payloads
+const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
 
 interface AdminPageProps {
   onBack: () => void;
 }
 
 export function AdminPage({ onBack }: AdminPageProps) {
-  const { products, addProduct, deleteProduct, cart } = useCart();
+  const { products, addProduct, deleteProduct, updateProduct, cart } = useCart();
 
   // Form State
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
@@ -61,25 +118,33 @@ export function AdminPage({ onBack }: AdminPageProps) {
   };
 
   // Handle image upload logic (Firebase Storage or Base64 FileReader Fallback)
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (rawFile: File) => {
     // 1. Validation
-    if (!file.type.startsWith("image/")) {
+    if (!rawFile.type.startsWith("image/")) {
       alert("Invalid file format. Please upload an image file (PNG, JPG, JPEG, WEBP, SVG, etc.).");
       return;
     }
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      alert("File size exceeds 5MB limit. Please upload a smaller image.");
+    const maxSize = 25 * 1024 * 1024; // 25MB
+    if (rawFile.size > maxSize) {
+      alert("File size exceeds 25MB limit. Please upload a smaller image.");
       return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    // Compress the image before uploading or converting to Base64 to ensure it easily fits within the 1MB Firestore document limit
+    let file = rawFile;
+    try {
+      file = await compressImage(rawFile);
+    } catch (e) {
+      console.error("Image compression failed, using original file:", e);
     }
 
     // Set local preview instantly
     const localUrl = URL.createObjectURL(file);
     setPreviewUrl(localUrl);
     setImage(localUrl); // Temporarily set preview url to satisfy form submit check
-
-    setUploading(true);
-    setUploadProgress(0);
 
     if (isFirebaseConfigured && storage) {
       try {
@@ -90,16 +155,15 @@ export function AdminPage({ onBack }: AdminPageProps) {
         let hasProgressed = false;
         const timeoutId = setTimeout(() => {
           if (!hasProgressed) {
-            console.warn("Upload stuck at 0% for 7 seconds. Cancelling and falling back to Base64.");
-            uploadTask.cancel();
-            encodeAsBase64(file);
-            alert(
-              "Firebase Storage upload timed out.\n\n" +
+            console.warn(
+              "Firebase Storage upload timed out.\n" +
               "Troubleshooting steps:\n" +
               "1. Verify that 'Storage' is activated in your Firebase Console (https://console.firebase.google.com).\n" +
-              "2. Confirm your Firebase Storage Rules allow public access.\n\n" +
-              "Falling back to local Base64 image encoding for uninterrupted usage."
+              "2. Confirm your Firebase Storage Rules allow public access."
             );
+            uploadTask.cancel();
+            encodeAsBase64(file);
+            triggerToast("Cloud upload timed out. Switched to high-performance local encoding! ⚡");
           }
         }, 7000);
 
@@ -122,7 +186,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
               return;
             }
             console.error("Firebase Storage Upload Error:", error);
-            alert(`Cloud upload failed: ${error.message}. Falling back to local Base64 encoding.`);
+            triggerToast("Cloud upload failed. Automatically fallback to local encoding.");
             encodeAsBase64(file);
           },
           async () => {
@@ -201,19 +265,35 @@ export function AdminPage({ onBack }: AdminPageProps) {
       }
     }
 
-    addProduct({
-      name,
-      price: parseFloat(price),
-      originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
-      discount: discount || undefined,
-      rating: parseFloat(rating) || 4.8,
-      category,
-      unit,
-      image: finalImage,
-      buyLink
-    });
-
-    triggerToast(`Product "${name}" added to catalog successfully!`);
+    if (editingProductId !== null) {
+      updateProduct({
+        id: editingProductId,
+        name,
+        price: parseFloat(price),
+        originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+        discount: discount || undefined,
+        rating: parseFloat(rating) || 4.8,
+        category,
+        unit,
+        image: finalImage,
+        buyLink
+      });
+      triggerToast(`Product "${name}" updated successfully!`);
+      setEditingProductId(null);
+    } else {
+      addProduct({
+        name,
+        price: parseFloat(price),
+        originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+        discount: discount || undefined,
+        rating: parseFloat(rating) || 4.8,
+        category,
+        unit,
+        image: finalImage,
+        buyLink
+      });
+      triggerToast(`Product "${name}" added to catalog successfully!`);
+    }
 
     // Reset Form
     setName("");
@@ -227,8 +307,43 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setBuyLink("");
   };
 
+  const handleEdit = (product: any) => {
+    setEditingProductId(product.id);
+    setName(product.name);
+    setPrice(product.price.toString());
+    setOriginalPrice(product.originalPrice ? product.originalPrice.toString() : "");
+    setDiscount(product.discount || "");
+    setCategory(product.category);
+    setUnit(product.unit || "1 piece");
+    setRating(product.rating.toString());
+    setImage(product.image);
+    setPreviewUrl(product.image);
+    setBuyLink(product.buyLink || "");
+    
+    // Smooth scroll up to the form
+    window.scrollTo({ top: 180, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+    setName("");
+    setPrice("");
+    setOriginalPrice("");
+    setDiscount("");
+    setCategory("Electronics");
+    setUnit("1 piece");
+    setRating("4.8");
+    setImage("");
+    setPreviewUrl("");
+    setBuyLink("");
+  };
+
   const handleDelete = (id: number, productName: string) => {
     if (confirm(`Are you sure you want to delete "${productName}" from the catalog?`)) {
+      // If we are currently editing the product that is being deleted, cancel the edit mode
+      if (editingProductId === id) {
+        handleCancelEdit();
+      }
       deleteProduct(id);
       triggerToast(`Product "${productName}" removed from catalog.`);
     }
@@ -285,8 +400,17 @@ export function AdminPage({ onBack }: AdminPageProps) {
           <div className="lg:col-span-1">
             <div className="bg-[#ffffff] rounded-2xl p-6 border border-[#E8E8E8]">
               <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-                <PlusCircle size={20} className="text-[#E23744]" />
-                Add Curated Product
+                {editingProductId !== null ? (
+                  <>
+                    <ShieldCheck size={20} className="text-[#E23744]" />
+                    Edit Curated Product
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle size={20} className="text-[#E23744]" />
+                    Add Curated Product
+                  </>
+                )}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -342,6 +466,10 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       <option value="Watches">Watches</option>
                       <option value="Accessories">Accessories</option>
                       <option value="Workspace">Workspace</option>
+                      <option value="Grocery">Grocery</option>
+                      <option value="Chocolates">Chocolates</option>
+                      <option value="Beverages">Beverages</option>
+                      <option value="Gifts">Gifts</option>
                     </select>
                   </div>
                   <div>
@@ -445,7 +573,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         Drag and drop your image, or <span className="text-[#E23744] underline">browse</span>
                       </p>
                       <p className="text-[10px] text-gray-400 mt-1">
-                        Supports PNG, JPG, JPEG, WEBP, SVG (Max 5MB)
+                        Supports PNG, JPG, JPEG, WEBP, SVG (Max 25MB)
                       </p>
                     </div>
                   )}
@@ -489,8 +617,18 @@ export function AdminPage({ onBack }: AdminPageProps) {
                   type="submit"
                   className="w-full bg-[#E23744] hover:bg-[#CB202D] text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer mt-3"
                 >
-                  Publish to Catalog ⚡
+                  {editingProductId !== null ? "Update Product Details 💾" : "Publish to Catalog ⚡"}
                 </button>
+                
+                {editingProductId !== null && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer mt-2"
+                  >
+                    Cancel Edit ✕
+                  </button>
+                )}
               </form>
             </div>
           </div>
@@ -538,7 +676,14 @@ export function AdminPage({ onBack }: AdminPageProps) {
                             <p className="text-xs text-gray-400 line-through">₹{p.originalPrice}</p>
                           )}
                         </td>
-                        <td className="py-4.5 text-right">
+                        <td className="py-4.5 text-right flex justify-end gap-1.5">
+                          <button
+                            onClick={() => handleEdit(p)}
+                            className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg transition-colors cursor-pointer inline-flex items-center"
+                            title="Edit Product"
+                          >
+                            <Edit size={16} />
+                          </button>
                           <button
                             onClick={() => handleDelete(p.id, p.name)}
                             className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors cursor-pointer inline-flex items-center"

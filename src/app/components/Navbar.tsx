@@ -46,6 +46,19 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { alert("Please fill in all fields."); return; }
+    
+    const lowercaseEmail = email.toLowerCase();
+
+    // Check if it's the special mock admin login
+    if (lowercaseEmail === "admin@noirkart.com" && password === "admin") {
+      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: "Admin Manager" }));
+      loginUser(lowercaseEmail, "Admin Manager");
+      setIsLoginOpen(false);
+      triggerToast("Welcome back, Admin Manager! (Admin Panel Unlocked)");
+      setEmail(""); setPassword("");
+      return;
+    }
+
     if (isFirebaseConfigured && auth) {
       try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -57,7 +70,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         alert(`Authentication failed: ${err.message}`);
       }
     } else {
-      const lowercaseEmail = email.toLowerCase();
       const storedUsers = localStorage.getItem("noirkart_users");
       let users = storedUsers ? JSON.parse(storedUsers) : [];
       if (!users.some((u: any) => u.email === "admin@noirkart.com")) {
@@ -108,8 +120,16 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
   const handleLogout = async () => {
     if (isFirebaseConfigured && auth) {
-      try { await signOut(auth); setShowDropdown(false); triggerToast("Logged out successfully."); }
-      catch (err: any) { alert(`Failed to sign out: ${err.message}`); }
+      try { 
+        await signOut(auth); 
+        logoutUser();
+        setShowDropdown(false); 
+        triggerToast("Logged out successfully."); 
+      }
+      catch (err: any) { 
+        logoutUser();
+        alert(`Failed to sign out: ${err.message}`); 
+      }
     } else {
       logoutUser(); setShowDropdown(false); triggerToast("Logged out successfully.");
     }

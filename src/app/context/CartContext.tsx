@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 import { Product } from "../components/ProductCard";
 import { featuredProducts } from "../data/products";
 import { db, isFirebaseConfigured, auth } from "../lib/firebase";
-import { collection, getDocs, addDoc, deleteDoc, doc, query } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 interface CartItem extends Product {
@@ -22,6 +22,7 @@ interface CartContextType {
   products: Product[];
   addProduct: (product: Omit<Product, "id">) => void;
   deleteProduct: (id: number) => void;
+  updateProduct: (product: Product) => void;
 
   // Global Auth State
   isLoggedIn: boolean;
@@ -55,6 +56,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setUserName(user.displayName || (email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
           setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
         } else {
+          // If there is an active local admin session in localStorage, do NOT log out!
+          const session = localStorage.getItem("noirkart_active_session");
+          if (session) {
+            try {
+              const parsed = JSON.parse(session);
+              if (parsed.email.toLowerCase() === "admin@noirkart.com") {
+                setIsLoggedIn(true);
+                setActiveUserEmail(parsed.email);
+                setUserName(parsed.name);
+                setIsAdmin(true);
+                return;
+              }
+            } catch (e) {
+              console.error("Failed to restore local admin session", e);
+            }
+          }
           setIsLoggedIn(false);
           setActiveUserEmail("");
           setUserName("");
@@ -100,7 +117,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("noirkart_products");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Migration check: If the stored products do not have Grocery or Chocolates categories, reseed to update!
+        const hasNewCategories = parsed.some((p: any) => p.category === "Grocery" || p.category === "Chocolates");
+        if (hasNewCategories) {
+          return parsed;
+        }
       } catch (e) {
         console.error("Failed to parse local products, seeding defaults", e);
       }
@@ -200,21 +222,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
           image: newProduct.image,
           buyLink: newProduct.buyLink
         });
-        
-        setProducts((prev) => {
-          const updated = [productWithId, ...prev];
-          localStorage.setItem("noirkart_products", JSON.stringify(updated));
-          return updated;
-        });
-        return;
       } catch (error: any) {
         console.error("Failed to insert product into Firebase:", error);
-        alert(`Failed to add product to database: ${error.message}`);
-        return;
+        // Alert but do NOT return so that we still save locally
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to sync with Firebase (${error.message}).\n\n` +
+          `Your product has been successfully saved to your local browser storage instead!`
+        );
       }
     }
 
-    // LocalStorage Fallback
+    // Always update local state
     setProducts((prev) => {
       const updated = [productWithId, ...prev];
       localStorage.setItem("noirkart_products", JSON.stringify(updated));
@@ -243,12 +262,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       } catch (error: any) {
         console.error("Failed to delete product from Firebase:", error);
-        alert(`Failed to delete product from database: ${error.message}`);
-        return;
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to delete from Firebase (${error.message}).\n\n` +
+          `Your product has been successfully removed from local browser storage!`
+        );
       }
     }
 
-    // Update local state
+    // Always update local state
     setProducts((prev) => {
       const updated = prev.filter((p) => p.id !== id);
       localStorage.setItem("noirkart_products", JSON.stringify(updated));
@@ -256,6 +278,58 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
     // Remove from active watchlist if deleted from store catalog
     removeFromCart(id);
+  };
+
+  // Update a product in the catalog (syncs with Firebase if configured)
+  const updateProduct = async (updatedProduct: Product) => {
+    if (isFirebaseConfigured && db) {
+      try {
+        const productsCol = collection(db, "products");
+        const q = query(productsCol);
+        const querySnapshot = await getDocs(q);
+        
+        let docIdToUpdate = "";
+        querySnapshot.forEach((docSnap) => {
+          if (Number(docSnap.data().id) === updatedProduct.id) {
+            docIdToUpdate = docSnap.id;
+          }
+        });
+
+        if (docIdToUpdate) {
+          const docRef = doc(db, "products", docIdToUpdate);
+          await updateDoc(docRef, {
+            name: updatedProduct.name,
+            price: updatedProduct.price,
+            originalPrice: updatedProduct.originalPrice || null,
+            discount: updatedProduct.discount || null,
+            rating: updatedProduct.rating,
+            category: updatedProduct.category,
+            unit: updatedProduct.unit || null,
+            image: updatedProduct.image,
+            buyLink: updatedProduct.buyLink
+          });
+        }
+      } catch (error: any) {
+        console.error("Failed to update product in Firebase:", error);
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to sync update with Firebase (${error.message}).\n\n` +
+          `Your changes have been successfully saved to your local browser storage instead!`
+        );
+      }
+    }
+
+    // Always update local state
+    setProducts((prev) => {
+      const updated = prev.map((p) => p.id === updatedProduct.id ? updatedProduct : p);
+      localStorage.setItem("noirkart_products", JSON.stringify(updated));
+      return updated;
+    });
+
+    // Update watchlist/cart item if saved
+    setCart((prev) => 
+      prev.map((item) => item.id === updatedProduct.id ? { ...item, ...updatedProduct } : item)
+    );
   };
 
   const cartTotal = cart.reduce(
@@ -278,6 +352,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         products,
         addProduct,
         deleteProduct,
+        updateProduct,
         isLoggedIn,
         isAdmin,
         activeUserEmail,
