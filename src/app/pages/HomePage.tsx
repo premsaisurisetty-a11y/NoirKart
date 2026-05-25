@@ -19,8 +19,17 @@ export function HomePage({ onProductClick }: HomePageProps) {
     addToCart(product);
   };
 
-  const electronicProducts = products.filter(p => p.category === "Electronics");
-  const fashionProducts = products.filter(p => p.category === "Fashion");
+  // Sort populated categories according to their default index in products data,
+  // and put any new/custom categories at the end.
+  const populatedCategories = Array.from(new Set(products.map(p => p.category)))
+    .sort((a, b) => {
+      const indexA = categories.findIndex(c => c.name === a);
+      const indexB = categories.findIndex(c => c.name === b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
@@ -76,55 +85,39 @@ export function HomePage({ onProductClick }: HomePageProps) {
           </div>
         </section>
 
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Electronics</h2>
-            <button className="flex items-center gap-1 text-[#0c831f] font-semibold text-sm hover:gap-2 transition-all">
-              see all <ChevronRight size={16} />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-            {electronicProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <ProductCard
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onViewDetails={onProductClick}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        {populatedCategories.map((categoryName) => {
+          const categoryProducts = products.filter(p => p.category === categoryName);
+          if (categoryProducts.length === 0) return null;
 
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Fashion & Accessories</h2>
-            <button className="flex items-center gap-1 text-[#0c831f] font-semibold text-sm hover:gap-2 transition-all">
-              see all <ChevronRight size={16} />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-            {fashionProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <ProductCard
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onViewDetails={onProductClick}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </section>
+          return (
+            <section key={categoryName} className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-800">
+                  {categoryName === "Fashion" ? "Fashion & Accessories" : categoryName}
+                </h2>
+                <button className="flex items-center gap-1 text-[#0c831f] font-semibold text-sm hover:gap-2 transition-all">
+                  see all <ChevronRight size={16} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+                {categoryProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      onViewDetails={onProductClick}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
 
         <section className="mb-8">
           <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-2xl p-8 md:p-12 text-white text-center shadow-lg">
