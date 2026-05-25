@@ -86,20 +86,47 @@ export function AdminPage({ onBack }: AdminPageProps) {
         const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
+        // Watchdog timer: if upload is stuck at 0% for 7 seconds, fall back
+        let hasProgressed = false;
+        const timeoutId = setTimeout(() => {
+          if (!hasProgressed) {
+            console.warn("Upload stuck at 0% for 7 seconds. Cancelling and falling back to Base64.");
+            uploadTask.cancel();
+            encodeAsBase64(file);
+            alert(
+              "Firebase Storage upload timed out.\n\n" +
+              "Troubleshooting steps:\n" +
+              "1. Verify that 'Storage' is activated in your Firebase Console (https://console.firebase.google.com).\n" +
+              "2. Confirm your Firebase Storage Rules allow public access.\n\n" +
+              "Falling back to local Base64 image encoding for uninterrupted usage."
+            );
+          }
+        }, 7000);
+
         uploadTask.on(
           "state_changed",
           (snapshot) => {
             const progress = Math.round(
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100
             );
+            if (progress > 0) {
+              hasProgressed = true;
+              clearTimeout(timeoutId);
+            }
             setUploadProgress(progress);
           },
           (error) => {
+            clearTimeout(timeoutId);
+            if (error.code === "storage/canceled") {
+              // Aborted by watchdog timer, ignore secondary error handler
+              return;
+            }
             console.error("Firebase Storage Upload Error:", error);
             alert(`Cloud upload failed: ${error.message}. Falling back to local Base64 encoding.`);
             encodeAsBase64(file);
           },
           async () => {
+            clearTimeout(timeoutId);
             try {
               const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
               setImage(downloadUrl);
