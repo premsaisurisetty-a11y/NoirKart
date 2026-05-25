@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Search, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
+import { Heart, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
@@ -21,7 +21,6 @@ interface NavbarProps {
 }
 
 export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }: NavbarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -161,16 +160,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
             </div>
           </div>
 
-          <div className="flex-1 max-w-xl mx-8 hidden md:block">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text" placeholder='Search handpicked premium gear...' value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 transition-all text-sm text-gray-800 placeholder-gray-400"
-              />
-            </div>
-          </div>
 
           <div className="flex items-center gap-4">
             {!isLoggedIn ? (
@@ -235,14 +224,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
           </div>
         </div>
 
-        <div className="md:hidden pb-3">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input type="text" placeholder="Search premium products..." value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 text-xs text-gray-800 placeholder-gray-400" />
-          </div>
-        </div>
       </div>
 
       <div className="bg-gradient-to-r from-[#E23744] to-[#CB202D]">
