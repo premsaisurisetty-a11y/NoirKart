@@ -146,9 +146,8 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <motion.div className="flex items-center gap-2.5 cursor-pointer" whileHover={{ scale: 1.02 }} onClick={onLogoClick}>
-              <img src="/noirkart_logo.png" alt="noirkart logo" className="w-9 h-9 rounded-lg object-cover border border-gray-200 shadow-xs" />
-              <h1 className="text-2xl font-normal text-[#E23744] hidden sm:block tracking-wide" style={{ fontFamily: "'Titan One', cursive" }}>noirkart</h1>
+            <motion.div className="flex items-center cursor-pointer" whileHover={{ scale: 1.02 }} onClick={onLogoClick}>
+              <img src="/noirkart_logo.png" alt="noirkart" className="h-10 w-auto object-contain" />
             </motion.div>
 
             <div className="hidden md:flex items-center gap-2 text-sm">
