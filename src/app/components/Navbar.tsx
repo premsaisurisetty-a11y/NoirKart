@@ -30,6 +30,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
   const [password, setPassword] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [signUpName, setSignUpName] = useState("");
 
   const {
     isLoggedIn,
@@ -102,7 +103,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!signUpName || !email || !password) {
       alert("Please fill in all fields.");
       return;
     }
@@ -113,11 +114,11 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         const user = userCredential.user;
         
         // Sync Display Name in profile
-        await updateProfile(user, { displayName: name });
+        await updateProfile(user, { displayName: signUpName });
 
         setIsLoginOpen(false);
-        triggerToast(`Account created securely! Welcome, ${name}.`);
-        setName("");
+        triggerToast(`Account created securely! Welcome, ${signUpName}.`);
+        setSignUpName("");
         setEmail("");
         setPassword("");
       } catch (err: any) {
@@ -135,20 +136,20 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         return;
       }
 
-      const newUser = { name, email: lowercaseEmail, password };
+      const newUser = { name: signUpName, email: lowercaseEmail, password };
       users.push(newUser);
       localStorage.setItem("noirkart_users", JSON.stringify(users));
       
       // Save local session
       localStorage.setItem("noirkart_active_session", JSON.stringify({
         email: lowercaseEmail,
-        name
+        name: signUpName
       }));
 
-      loginUser(lowercaseEmail, name);
+      loginUser(lowercaseEmail, signUpName);
       setIsLoginOpen(false);
-      triggerToast(`Account created locally! Welcome, ${name}.`);
-      setName("");
+      triggerToast(`Account created locally! Welcome, ${signUpName}.`);
+      setSignUpName("");
       setEmail("");
       setPassword("");
     }
@@ -441,8 +442,8 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
                       <input
                         type="text"
                         placeholder="John Doe"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={signUpName}
+                        onChange={(e) => setSignUpName(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] focus:border-transparent text-sm transition-all"
                       />
                     </div>
