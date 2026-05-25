@@ -3,7 +3,6 @@ import { Star, ChevronLeft, Heart } from "lucide-react";
 import { Button } from "../components/Button";
 import { Product, ProductCard } from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
-import { featuredProducts } from "../data/products";
 
 interface ProductPageProps {
   product: Product;
@@ -11,7 +10,7 @@ interface ProductPageProps {
 }
 
 export function ProductPage({ product, onBack }: ProductPageProps) {
-  const { cart, addToCart, removeFromCart } = useCart();
+  const { cart, addToCart, removeFromCart, products } = useCart();
   const isSaved = cart.some((item) => item.id === product.id);
 
   const handleSave = () => {
@@ -30,7 +29,7 @@ export function ProductPage({ product, onBack }: ProductPageProps) {
     }
   };
 
-  const relatedProducts = featuredProducts.filter(p => p.id !== product.id && p.category === product.category).slice(0, 6);
+  const relatedProducts = products.filter(p => p.id !== product.id && p.category === product.category).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16">

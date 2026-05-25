@@ -1,14 +1,15 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Search, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown } from "lucide-react";
+import { Heart, Search, MapPin, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
 interface NavbarProps {
   cartCount?: number;
   onCartClick?: () => void;
   onLogoClick?: () => void;
+  onAdminClick?: () => void;
 }
 
-export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps) {
+export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   
   // Login / Auth State
@@ -18,6 +19,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [activeUserEmail, setActiveUserEmail] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -37,6 +39,11 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
     
     // Simulate Login
     setIsLoggedIn(true);
+    const lowercaseEmail = email.toLowerCase();
+    setActiveUserEmail(lowercaseEmail);
+    if (lowercaseEmail === "admin@noirkart.com") {
+      setName("Admin Manager");
+    }
     setIsLoginOpen(false);
     triggerToast("Logged in successfully! Welcome back to noirkart.");
     setEmail("");
@@ -52,6 +59,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
     
     // Simulate Sign Up
     setIsLoggedIn(true);
+    setActiveUserEmail(email.toLowerCase());
     setIsLoginOpen(false);
     triggerToast(`Account created! Welcome, ${name}.`);
     setName("");
@@ -61,6 +69,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setActiveUserEmail("");
     setShowDropdown(false);
     triggerToast("Logged out successfully. See you next time!");
   };
@@ -123,10 +132,10 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100 shadow-2xs"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
-                    {name ? name.charAt(0).toUpperCase() : "P"}
+                    {name ? name.charAt(0).toUpperCase() : "A"}
                   </div>
                   <span className="text-sm font-medium text-gray-800 hidden sm:inline">
-                    {name ? name.split(" ")[0] : "Prem"}
+                    {activeUserEmail === "admin@noirkart.com" ? "Admin" : (name ? name.split(" ")[0] : "User")}
                   </span>
                   <ChevronDown size={14} className="text-gray-500" />
                 </button>
@@ -137,15 +146,28 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick }: NavbarProps)
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-1"
                     >
                       <div className="px-4 py-2 border-b border-gray-50">
                         <p className="text-xs text-gray-400">Signed in as</p>
                         <p className="text-sm font-semibold text-gray-800 truncate text-left">
-                          {name || "Prem Kumar"}
+                          {activeUserEmail === "admin@noirkart.com" ? "Admin Manager" : (name || "Prem Kumar")}
                         </p>
-                        <p className="text-xs text-gray-500 truncate text-left">{email || "prem@nexus.com"}</p>
+                        <p className="text-xs text-gray-500 truncate text-left">{activeUserEmail || "prem@nexus.com"}</p>
                       </div>
+
+                      {activeUserEmail === "admin@noirkart.com" && (
+                        <button
+                          onClick={() => {
+                            onAdminClick?.();
+                            setShowDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-[#0c831f] hover:bg-green-50 transition-colors flex items-center gap-2 cursor-pointer font-bold border-b border-gray-50"
+                        >
+                          <ShieldCheck size={16} />
+                          Admin Control Panel ⚙️
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {

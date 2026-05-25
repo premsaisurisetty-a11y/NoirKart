@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { ProductCard, Product } from "../components/ProductCard";
 import { CategoryCard } from "../components/CategoryCard";
 import { useCart } from "../context/CartContext";
-import { featuredProducts, categories, banners } from "../data/products";
+import { categories, banners } from "../data/products";
 import { useState } from "react";
 
 interface HomePageProps {
@@ -12,15 +12,15 @@ interface HomePageProps {
 }
 
 export function HomePage({ onProductClick }: HomePageProps) {
-  const { addToCart } = useCart();
+  const { products, addToCart } = useCart();
   const [currentBanner, setCurrentBanner] = useState(0);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
   };
 
-  const electronicProducts = featuredProducts.filter(p => p.category === "Electronics");
-  const fashionProducts = featuredProducts.filter(p => p.category === "Fashion");
+  const electronicProducts = products.filter(p => p.category === "Electronics");
+  const fashionProducts = products.filter(p => p.category === "Fashion");
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">

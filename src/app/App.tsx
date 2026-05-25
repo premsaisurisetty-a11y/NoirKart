@@ -4,10 +4,11 @@ import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
 import { ProductPage } from "./pages/ProductPage";
 import { CartPage } from "./pages/CartPage";
+import { AdminPage } from "./pages/AdminPage";
 import { CartProvider, useCart } from "./context/CartContext";
 import { Product } from "./components/ProductCard";
 
-type Page = "home" | "product" | "cart";
+type Page = "home" | "product" | "cart" | "admin";
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -30,12 +31,18 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleAdminClick = () => {
+    setCurrentPage("admin");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar
         cartCount={cartCount}
         onCartClick={handleCartClick}
         onLogoClick={handleBackToHome}
+        onAdminClick={handleAdminClick}
       />
 
       {currentPage === "home" && (
@@ -48,6 +55,8 @@ function AppContent() {
 
       {currentPage === "cart" && <CartPage onBack={handleBackToHome} />}
 
+      {currentPage === "admin" && <AdminPage onBack={handleBackToHome} />}
+
       <Footer />
     </div>
   );
@@ -59,4 +68,4 @@ export default function App() {
       <AppContent />
     </CartProvider>
   );
-}
+}
