@@ -218,11 +218,16 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <motion.div
-              className="flex items-center cursor-pointer"
+              className="flex items-center gap-2.5 cursor-pointer"
               whileHover={{ scale: 1.02 }}
               onClick={onLogoClick}
             >
-              <h1 className="text-2xl font-bold text-[#0c831f] tracking-tight">noirkart</h1>
+              <img
+                src="/noirkart_logo.png"
+                alt="noirkart logo"
+                className="w-9 h-9 rounded-lg object-cover border border-gray-200 shadow-xs"
+              />
+              <h1 className="text-2xl font-bold text-[#0c831f] tracking-tight hidden sm:block">noirkart</h1>
             </motion.div>
 
             <div className="hidden md:flex items-center gap-2 text-sm">
