@@ -239,20 +239,20 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const averagePrice = products.length > 0 ? (totalCatalogValue / products.length).toFixed(0) : "0";
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+    <div className="min-h-screen bg-[#F8F8F8] pt-32 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Navigation */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-[#0c831f] mb-6 transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-gray-500 hover:text-[#E23744] mb-6 transition-colors cursor-pointer"
         >
           <ChevronLeft size={20} />
           Exit Admin Panel
         </button>
 
         <div className="flex items-center gap-3 mb-8">
-          <ShieldCheck size={36} className="text-[#0c831f]" />
+          <ShieldCheck size={36} className="text-[#E23744]" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">noirkart Admin Control Center</h1>
             <p className="text-xs text-gray-500">Add, review, and delete premium curated external links from the public store catalog.</p>
@@ -262,12 +262,12 @@ export function AdminPage({ onBack }: AdminPageProps) {
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Active Products", val: products.length, icon: List, col: "text-[#0c831f] bg-green-50" },
-            { label: "Est. Catalog Value", val: `₹${totalCatalogValue.toLocaleString()}`, icon: DollarSign, col: "text-blue-600 bg-blue-50" },
-            { label: "Avg. Item Price", val: `₹${averagePrice}`, icon: DollarSign, col: "text-purple-600 bg-purple-50" },
-            { label: "Shortlisted Watchers", val: `${cart.length} saves`, icon: ShoppingBag, col: "text-amber-600 bg-amber-50" }
+            { label: "Active Products", val: products.length, icon: List, col: "text-[#E23744] bg-[#E23744]/10" },
+            { label: "Est. Catalog Value", val: `₹${totalCatalogValue.toLocaleString()}`, icon: DollarSign, col: "text-blue-400 bg-blue-500/10" },
+            { label: "Avg. Item Price", val: `₹${averagePrice}`, icon: DollarSign, col: "text-purple-400 bg-purple-500/10" },
+            { label: "Shortlisted Watchers", val: `${cart.length} saves`, icon: ShoppingBag, col: "text-amber-400 bg-amber-500/10" }
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-xs p-5 border border-gray-100 flex items-center justify-between">
+            <div key={i} className="bg-[#ffffff] rounded-xl p-5 border border-[#E8E8E8] flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{stat.label}</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{stat.val}</p>
@@ -283,29 +283,29 @@ export function AdminPage({ onBack }: AdminPageProps) {
           
           {/* Add Product Form Column */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-                <PlusCircle size={20} className="text-[#0c831f]" />
+            <div className="bg-[#ffffff] rounded-2xl p-6 border border-[#E8E8E8]">
+              <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+                <PlusCircle size={20} className="text-[#E23744]" />
                 Add Curated Product
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Product Name <span className="text-red-500">*</span></label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Product Name <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     required
                     placeholder="e.g., Premium mechanical keyboard"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                    className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Price (₹) <span className="text-red-500">*</span></label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Price (₹) <span className="text-red-400">*</span></label>
                     <input
                       type="number"
                       required
@@ -313,7 +313,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       placeholder="e.g., 2999"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
                   <div>
@@ -323,7 +323,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       placeholder="e.g., 4999"
                       value={originalPrice}
                       onChange={(e) => setOriginalPrice(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900"
                     >
                       <option value="Electronics">Electronics</option>
                       <option value="Fashion">Fashion</option>
@@ -351,7 +351,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       placeholder="e.g., 40% OFF"
                       value={discount}
                       onChange={(e) => setDiscount(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -364,7 +364,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       placeholder="e.g., 1 piece"
                       value={unit}
                       onChange={(e) => setUnit(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
                   <div>
@@ -377,7 +377,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       placeholder="e.g., 4.8"
                       value={rating}
                       onChange={(e) => setRating(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -387,7 +387,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                   
                   {previewUrl ? (
                     /* Thumbnail Preview */
-                    <div className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
+                    <div className="relative group rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#F8F8F8] aspect-video flex items-center justify-center">
                       <img
                         src={previewUrl}
                         alt="Product upload preview"
@@ -397,7 +397,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         <button
                           type="button"
                           onClick={handleResetImage}
-                          className="p-2.5 bg-red-600/95 text-white rounded-full hover:bg-red-700 transition-all transform scale-90 group-hover:scale-100 duration-300 shadow-md cursor-pointer"
+                          className="p-2.5 bg-red-600/95 text-gray-900 rounded-full hover:bg-red-700 transition-all transform scale-90 group-hover:scale-100 duration-300 shadow-md cursor-pointer"
                           title="Remove Image"
                         >
                           <X size={18} />
@@ -405,12 +405,12 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       </div>
                       
                       {uploading && (
-                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white px-4">
-                          <Loader2 className="animate-spin text-[#0c831f] mb-2" size={28} />
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-gray-900 px-4">
+                          <Loader2 className="animate-spin text-[#E23744] mb-2" size={28} />
                           <p className="text-xs font-semibold">Uploading to Cloud Storage...</p>
                           <div className="w-3/4 bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden border border-gray-800">
                             <div 
-                              className="bg-[#0c831f] h-full transition-all duration-300 rounded-full" 
+                              className="bg-[#E23744] h-full transition-all duration-300 rounded-full" 
                               style={{ width: `${uploadProgress}%` }}
                             />
                           </div>
@@ -427,8 +427,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       onDrop={handleDrop}
                       className={`relative border-2 border-dashed rounded-xl p-6 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer min-h-[140px] text-center ${
                         dragActive
-                          ? "border-[#0c831f] bg-green-50/50 scale-[0.99] shadow-inner"
-                          : "border-gray-200 hover:border-[#0c831f] hover:bg-gray-50/50"
+                          ? "border-[#E23744] bg-[#E23744]/5 scale-[0.99] shadow-inner"
+                          : "border-[#E8E8E8] hover:border-[#E23744] hover:bg-[#F8F8F8]"
                       }`}
                     >
                       <input
@@ -438,11 +438,11 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
                       
-                      <div className="p-2.5 bg-gray-50 rounded-full text-gray-400 mb-2">
+                      <div className="p-2.5 bg-[#F8F8F8] rounded-full text-gray-400 mb-2">
                         <UploadCloud size={24} />
                       </div>
                       <p className="text-xs font-semibold text-gray-700">
-                        Drag and drop your image, or <span className="text-[#0c831f] underline">browse</span>
+                        Drag and drop your image, or <span className="text-[#E23744] underline">browse</span>
                       </p>
                       <p className="text-[10px] text-gray-400 mt-1">
                         Supports PNG, JPG, JPEG, WEBP, SVG (Max 5MB)
@@ -453,11 +453,11 @@ export function AdminPage({ onBack }: AdminPageProps) {
                   {/* Manual paste field */}
                   <div className="mt-2">
                     <details className="group">
-                      <summary className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 cursor-pointer list-none flex items-center gap-1 select-none">
+                      <summary className="text-[10px] font-semibold text-gray-400 hover:text-gray-500 cursor-pointer list-none flex items-center gap-1 select-none">
                         <span className="transition-transform duration-200 group-open:rotate-90">▶</span>
                         Or paste direct image URL instead
                       </summary>
-                      <div className="mt-1.5 pl-2.5 border-l-2 border-gray-100">
+                      <div className="mt-1.5 pl-2.5 border-l-2 border-[#E8E8E8]">
                         <input
                           type="url"
                           placeholder="e.g. https://images.unsplash.com/..."
@@ -466,7 +466,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                             setImage(e.target.value);
                             setPreviewUrl(e.target.value);
                           }}
-                          className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-xs"
+                          className="w-full px-3 py-1.5 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-xs text-gray-900 placeholder-gray-400"
                         />
                       </div>
                     </details>
@@ -474,20 +474,20 @@ export function AdminPage({ onBack }: AdminPageProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Merchant Affiliate Link <span className="text-red-500">*</span></label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Merchant Affiliate Link <span className="text-red-400">*</span></label>
                   <input
                     type="url"
                     required
                     placeholder="e.g., https://amazon.in/..."
                     value={buyLink}
                     onChange={(e) => setBuyLink(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0c831f] text-sm"
+                    className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-[#0c831f] hover:bg-[#0a6b1a] text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer mt-3"
+                  className="w-full bg-[#E23744] hover:bg-[#CB202D] text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer mt-3"
                 >
                   Publish to Catalog ⚡
                 </button>
@@ -497,13 +497,13 @@ export function AdminPage({ onBack }: AdminPageProps) {
 
           {/* Catalog Listing Manager Column */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 overflow-hidden">
+            <div className="bg-[#ffffff] rounded-2xl p-6 border border-[#E8E8E8] overflow-hidden">
               <div className="flex justify-between items-center mb-5">
-                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <List size={20} className="text-[#0c831f]" />
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <List size={20} className="text-[#E23744]" />
                   Catalog Listings ({products.length})
                 </h2>
-                <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-semibold">
+                <span className="text-xs bg-[#F8F8F8] text-gray-500 px-3 py-1 rounded-full font-semibold border border-[#E8E8E8]">
                   LocalStorage Persistent
                 </span>
               </div>
@@ -511,24 +511,24 @@ export function AdminPage({ onBack }: AdminPageProps) {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-100 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <tr className="border-b border-[#E8E8E8] text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                       <th className="pb-3 w-16">Item</th>
                       <th className="pb-3">Details</th>
                       <th className="pb-3 w-28">Price</th>
                       <th className="pb-3 w-20 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-[#F5F5F5]">
                     {products.map((p) => (
                       <tr key={p.id} className="text-sm">
                         <td className="py-4.5 pr-3">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F8F8F8] border border-[#E8E8E8] flex-shrink-0">
                             <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                           </div>
                         </td>
                         <td className="py-4.5 min-w-[200px] pr-3">
                           <p className="font-bold text-gray-900 line-clamp-1">{p.name}</p>
-                          <span className="text-[10px] bg-gray-100 text-gray-500 uppercase tracking-wider font-bold px-2 py-0.5 rounded mt-1.5 inline-block">
+                          <span className="text-[10px] bg-[#F8F8F8] text-gray-500 uppercase tracking-wider font-bold px-2 py-0.5 rounded mt-1.5 inline-block border border-[#E8E8E8]">
                             {p.category}
                           </span>
                         </td>
@@ -541,7 +541,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         <td className="py-4.5 text-right">
                           <button
                             onClick={() => handleDelete(p.id, p.name)}
-                            className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors cursor-pointer inline-flex items-center"
+                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors cursor-pointer inline-flex items-center"
                             title="Delete Product"
                           >
                             <Trash2 size={16} />
@@ -566,7 +566,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-55 bg-gray-900/95 backdrop-blur-xs text-white px-5 py-3.5 rounded-xl shadow-xl flex items-center gap-3 border border-gray-800 text-sm max-w-sm sm:max-w-md"
           >
-            <CheckCircle2 className="text-[#0c831f] flex-shrink-0" size={20} />
+            <CheckCircle2 className="text-[#E23744] flex-shrink-0" size={20} />
             <span className="font-medium text-left">{toastMessage}</span>
           </motion.div>
         )}

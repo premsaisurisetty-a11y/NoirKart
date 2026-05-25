@@ -2,91 +2,93 @@
 
 :root {
   --font-size: 16px;
-  /* PREM NEXUS - Blinkit Style Theme */
+  /* NOIRKART - Zomato-Style Red & White Theme */
   --background: #ffffff;
-  --foreground: #1f1f1f;
+  --foreground: #1C1C1C;
   --card: #ffffff;
-  --card-foreground: #1f1f1f;
+  --card-foreground: #1C1C1C;
   --popover: #ffffff;
-  --popover-foreground: #1f1f1f;
-  --primary: #0c831f;
+  --popover-foreground: #1C1C1C;
+  --primary: #E23744;
   --primary-foreground: #ffffff;
-  --secondary: #f8f8f8;
-  --secondary-foreground: #1f1f1f;
-  --muted: #f3f3f3;
-  --muted-foreground: #666666;
-  --accent: #0c831f;
+  --secondary: #F8F8F8;
+  --secondary-foreground: #1C1C1C;
+  --muted: #F5F5F5;
+  --muted-foreground: #696969;
+  --accent: #E23744;
   --accent-foreground: #ffffff;
-  --destructive: #e74c3c;
+  --destructive: #E23744;
   --destructive-foreground: #ffffff;
-  --border: #e0e0e0;
-  --input: #f8f8f8;
-  --input-background: #f8f8f8;
-  --switch-background: #e0e0e0;
+  --border: #E8E8E8;
+  --input: #F8F8F8;
+  --input-background: #F8F8F8;
+  --switch-background: #E8E8E8;
   --font-weight-medium: 600;
   --font-weight-normal: 400;
-  --ring: #0c831f;
-  --chart-1: #0c831f;
-  --chart-2: #27ae60;
+  --ring: #E23744;
+  --chart-1: #E23744;
+  --chart-2: #ff6b6b;
   --chart-3: #f39c12;
-  --chart-4: #e74c3c;
+  --chart-4: #CB202D;
   --chart-5: #3498db;
   --radius: 0.75rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1f1f1f;
-  --sidebar-primary: #0c831f;
+  --sidebar-foreground: #1C1C1C;
+  --sidebar-primary: #E23744;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f8f8f8;
-  --sidebar-accent-foreground: #1f1f1f;
-  --sidebar-border: #e0e0e0;
-  --sidebar-ring: #0c831f;
+  --sidebar-accent: #FFF0F1;
+  --sidebar-accent-foreground: #1C1C1C;
+  --sidebar-border: #E8E8E8;
+  --sidebar-ring: #E23744;
 
-  /* Custom PREM NEXUS Blinkit tokens */
-  --blinkit-green: #0c831f;
-  --blinkit-dark-green: #0a6b1a;
-  --blinkit-yellow: #ffd400;
-  --blinkit-red: #e74c3c;
-  --blinkit-gray: #f8f8f8;
-  --blinkit-text: #1f1f1f;
-  --blinkit-light-text: #666666;
+  /* Custom noirkart Zomato-style tokens */
+  --zom-red: #E23744;
+  --zom-red-hover: #CB202D;
+  --zom-red-light: #FFF0F1;
+  --zom-bg: #ffffff;
+  --zom-surface: #ffffff;
+  --zom-surface-raised: #F8F8F8;
+  --zom-border: #E8E8E8;
+  --zom-text: #1C1C1C;
+  --zom-text-secondary: #696969;
+  --zom-text-muted: #9B9B9B;
 }
 
 .dark {
-  /* Light theme for Blinkit style */
   --background: #ffffff;
-  --foreground: #1f1f1f;
+  --foreground: #1C1C1C;
   --card: #ffffff;
-  --card-foreground: #1f1f1f;
+  --card-foreground: #1C1C1C;
   --popover: #ffffff;
-  --popover-foreground: #1f1f1f;
-  --primary: #0c831f;
+  --popover-foreground: #1C1C1C;
+  --primary: #E23744;
   --primary-foreground: #ffffff;
-  --secondary: #f8f8f8;
-  --secondary-foreground: #1f1f1f;
-  --muted: #f3f3f3;
-  --muted-foreground: #666666;
-  --accent: #0c831f;
+  --secondary: #F8F8F8;
+  --secondary-foreground: #1C1C1C;
+  --muted: #F5F5F5;
+  --muted-foreground: #696969;
+  --accent: #E23744;
   --accent-foreground: #ffffff;
-  --destructive: #e74c3c;
+  --destructive: #E23744;
   --destructive-foreground: #ffffff;
-  --border: #e0e0e0;
-  --input: #f8f8f8;
-  --ring: #0c831f;
+  --border: #E8E8E8;
+  --input: #F8F8F8;
+  --ring: #E23744;
   --font-weight-medium: 600;
   --font-weight-normal: 400;
-  --chart-1: #0c831f;
-  --chart-2: #27ae60;
+  --chart-1: #E23744;
+  --chart-2: #ff6b6b;
   --chart-3: #f39c12;
-  --chart-4: #e74c3c;
+  --chart-4: #CB202D;
   --chart-5: #3498db;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1f1f1f;
-  --sidebar-primary: #0c831f;
+  --sidebar-foreground: #1C1C1C;
+  --sidebar-primary: #E23744;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f8f8f8;
-  --sidebar-accent-foreground: #1f1f1f;
-  --sidebar-border: #e0e0e0;
-  --sidebar-ring: #0c831f;
+  --sidebar-accent: #FFF0F1;
+  --sidebar-accent-foreground: #1C1C1C;
+  --sidebar-border: #E8E8E8;
+  --sidebar-ring: #E23744;
 }
 
 @theme inline {
@@ -138,17 +140,14 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    background-color: #ffffff;
+    color: #1C1C1C;
   }
 
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
 
   html {
     font-size: var(--font-size);
@@ -196,33 +195,32 @@
     line-height: 1.5;
   }
 
-  /* PREM NEXUS Blinkit Custom Utilities */
-  .blinkit-shadow {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  /* noirkart Zomato-style Utilities */
+  .zom-shadow {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
-  .blinkit-shadow-lg {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  .zom-shadow-lg {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
-  .blinkit-card {
+  .zom-card {
     background: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
+    border: 1px solid #E8E8E8;
+    border-radius: 16px;
   }
 
-  .blinkit-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  .zom-card:hover {
+    box-shadow: 0 4px 16px rgba(226, 55, 68, 0.08);
+    border-color: #ddd;
   }
 
-  .gradient-green {
-    background: linear-gradient(135deg, #0c831f 0%, #27ae60 100%);
+  .gradient-red {
+    background: linear-gradient(135deg, #E23744 0%, #CB202D 100%);
   }
 
-  .delivery-badge {
-    background: linear-gradient(90deg, #0c831f 0%, #27ae60 100%);
-    color: white;
-    font-weight: 600;
+  .bg-gradient-green {
+    background: linear-gradient(90deg, #E23744 0%, #CB202D 100%);
   }
 
   /* Hide scrollbar for Chrome, Safari and Opera */

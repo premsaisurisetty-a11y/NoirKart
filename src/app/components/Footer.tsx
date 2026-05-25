@@ -7,7 +7,6 @@ export function Footer() {
     { icon: Twitter, label: "Twitter", href: "#" },
     { icon: Linkedin, label: "LinkedIn", href: "#" },
   ];
-
   const footerLinks = {
     "Useful Links": ["About", "Careers", "Blog", "Press", "Guidelines"],
     "Categories": ["Electronics", "Fashion", "Audio", "Watches", "Accessories", "Workspace"],
@@ -21,52 +20,39 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <img
-                src="/noirkart_logo.png"
-                alt="noirkart logo"
-                className="w-8 h-8 rounded-lg object-cover border border-gray-100 shadow-xs"
-              />
-              <h2 className="text-2xl font-normal text-[#0c831f] tracking-wide" style={{ fontFamily: "'Titan One', cursive" }}>noirkart</h2>
+              <img src="/noirkart_logo.png" alt="noirkart logo" className="w-8 h-8 rounded-lg object-cover border border-gray-100 shadow-xs" />
+              <h2 className="text-2xl font-normal text-[#E23744] tracking-wide" style={{ fontFamily: "'Titan One', cursive" }}>noirkart</h2>
             </div>
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-              Your ultimate curated directory for premium product designs and handpicked deals. We find and verify the best merchant purchase links so you don't have to. We do not deliver items directly.
+              Your ultimate curated directory for premium product designs and handpicked deals. We find and verify the best merchant purchase links so you don't have to.
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="w-9 h-9 rounded-full bg-gray-100 hover:bg-[#0c831f] hover:text-white transition-colors flex items-center justify-center cursor-pointer"
-                >
+                <a key={social.label} href={social.href}
+                  className="w-9 h-9 rounded-full bg-gray-100 hover:bg-[#E23744] hover:text-white transition-colors flex items-center justify-center cursor-pointer">
                   <social.icon size={18} />
                 </a>
               ))}
             </div>
           </div>
-
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h3 className="font-bold text-gray-800 mb-3 text-sm">{category}</h3>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-gray-600 hover:text-[#0c831f] transition-colors cursor-pointer">
-                      {link}
-                    </a>
-                  </li>
+                  <li key={link}><a href="#" className="text-sm text-gray-600 hover:text-[#E23744] transition-colors cursor-pointer">{link}</a></li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
         <div className="border-t border-gray-200 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
             <p>© 2026 noirkart. Premium Curated Links & Showcases. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-[#0c831f] transition-colors cursor-pointer">Privacy Policy</a>
-              <a href="#" className="hover:text-[#0c831f] transition-colors cursor-pointer">Terms of Service</a>
-              <a href="#" className="hover:text-[#0c831f] transition-colors cursor-pointer">Cookie Policy</a>
+              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Privacy Policy</a>
+              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Terms of Service</a>
+              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Cookie Policy</a>
             </div>
           </div>
         </div>
@@ -74,4 +60,3 @@ export function Footer() {
     </footer>
   );
 }
-
