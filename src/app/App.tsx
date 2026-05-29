@@ -73,10 +73,14 @@ function AppContent() {
   );
 }
 
+import { HelmetProvider } from 'react-helmet-async';
+
 export default function App() {
   return (
-    <CartProvider>
-      <AppContent />
-    </CartProvider>
+    <HelmetProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </HelmetProvider>
   );
 }

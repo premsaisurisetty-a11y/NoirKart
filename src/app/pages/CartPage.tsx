@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Trash2, ShoppingBag, ChevronLeft, ExternalLink, Info } from "lucide-react";
 import { Button } from "../components/Button";
 import { useCart } from "../context/CartContext";
+import SEO from "../components/SEO";
 
 interface CartPageProps { onBack: () => void; }
 
@@ -18,7 +19,12 @@ export function CartPage({ onBack }: CartPageProps) {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+      <>
+        <SEO 
+          title="My Watchlist" 
+          description="View your saved premium curated deals on NoirKart."
+        />
+        <div className="min-h-screen bg-gray-50 pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
             <div className="bg-white rounded-2xl shadow-sm p-12 border border-gray-100">
@@ -30,17 +36,23 @@ export function CartPage({ onBack }: CartPageProps) {
           </motion.div>
         </div>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
-          <ChevronLeft size={20} /> Back to Directory
-        </button>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Saved Deals</h1>
-        <p className="text-gray-500 mb-8">Compare and visit official merchant stores to purchase your shortlisted items.</p>
+    <>
+      <SEO 
+        title="My Watchlist" 
+        description={`View your ${cart.length} saved premium curated deals on NoirKart.`}
+      />
+      <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
+            <ChevronLeft size={20} /> Back to Directory
+          </button>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Saved Deals</h1>
+          <p className="text-gray-500 mb-8">Compare and visit official merchant stores to purchase your shortlisted items.</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
@@ -96,5 +108,6 @@ export function CartPage({ onBack }: CartPageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { Star, ChevronLeft, Heart } from "lucide-react";
 import { Button } from "../components/Button";
 import { Product, ProductCard } from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
+import SEO from "../components/SEO";
 
 interface ProductPageProps { 
   product: Product; 
@@ -18,11 +19,18 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
   const relatedProducts = products.filter(p => p.id !== product.id && p.category === product.category).slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-36 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
-          <ChevronLeft size={20} /> Back to Curated Directory
-        </button>
+    <>
+      <SEO 
+        title={`${product.name} - ₹${product.price}`}
+        description={`Buy ${product.name} at ₹${product.price}. Premium ${product.category.toLowerCase()} curated by NoirKart. Discover verified deals and official merchant links.`}
+        keywords={product.keywords?.join(", ") || `${product.category}, premium deals, noirkart`}
+        image={product.image}
+      />
+      <div className="min-h-screen bg-gray-50 pt-36 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
+            <ChevronLeft size={20} /> Back to Curated Directory
+          </button>
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 border border-gray-100">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
@@ -101,5 +109,6 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
         )}
       </div>
     </div>
+    </>
   );
 }

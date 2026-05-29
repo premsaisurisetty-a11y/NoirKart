@@ -118,11 +118,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Migration check: If the stored products do not have Grocery or Chocolates categories, reseed to update!
-        const hasNewCategories = parsed.some((p: any) => p.category === "Grocery" || p.category === "Chocolates");
-        if (hasNewCategories) {
-          return parsed;
+
+        // Non-destructive migration: patch keywords into existing products
+        const keywordsMap = new Map<number, string[]>();
+        featuredProducts.forEach(fp => {
+          if (fp.keywords) keywordsMap.set(fp.id, fp.keywords);
+        });
+
+        const patched = parsed.map((p: any) => {
+          if ((!p.keywords || p.keywords.length === 0) && keywordsMap.has(p.id)) {
+            return { ...p, keywords: keywordsMap.get(p.id) };
+          }
+          return p;
+        });
+
+        // Always add any missing default products (e.g. newly added Amazon products)
+        const existingIds = new Set(patched.map((p: any) => p.id));
+        const missing = featuredProducts.filter(fp => !existingIds.has(fp.id));
+        const merged = [...patched, ...missing];
+
+        if (missing.length > 0 || patched.length !== parsed.length) {
+          localStorage.setItem("noirkart_products", JSON.stringify(merged));
         }
+        return merged;
       } catch (e) {
         console.error("Failed to parse local products, seeding defaults", e);
       }

@@ -5,6 +5,7 @@ import { CategoryCard } from "../components/CategoryCard";
 import { useCart } from "../context/CartContext";
 import { categories } from "../data/products";
 import { useState } from "react";
+import SEO from "../components/SEO";
 
 interface HomePageProps {
   onProductClick: (product: Product) => void;
@@ -12,15 +13,30 @@ interface HomePageProps {
 }
 
 export function HomePage({ onProductClick }: HomePageProps) {
-  const { products, addToCart } = useCart();
+  const { products } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleAddToCart = (product: Product) => { addToCart(product); };
+  const matchesSearch = (product: Product, query: string): boolean => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase().trim();
+    const searchTerms = q.split(/\s+/).filter(Boolean);
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    // Build a searchable text blob for the product
+    const searchFields = [
+      product.name,
+      product.category,
+      product.unit || "",
+      product.discount || "",
+      ...(product.keywords || [])
+    ].join(" ").toLowerCase();
+
+    // Amazon-style: every search term must match somewhere in the product fields (AND logic)
+    return searchTerms.every(term =>
+      searchFields.includes(term)
+    );
+  };
+
+  const filteredProducts = products.filter(p => matchesSearch(p, searchQuery));
 
   const populatedCategories = Array.from(new Set(filteredProducts.map(p => p.category)))
     .sort((a, b) => {
@@ -47,13 +63,19 @@ export function HomePage({ onProductClick }: HomePageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
-      {/* Zomato-Style Hero — Bold Red & White */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] py-20 md:py-24 text-white -mt-32 md:-mt-28 mb-12 border-b border-red-200 shadow-md">
+    <>
+      <SEO 
+        title="Premium Curated Deals" 
+        description="Discover the finest premium curated deals on electronics, audio, wearables, and accessories in India. Shop with NoirKart for exclusive offers."
+        keywords="premium deals, ecommerce india, electronics deals, audio equipment, wearables, noirkart"
+      />
+      <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
+        {/* Zomato-Style Hero — Bold Red & White */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] pt-32 pb-20 md:pt-36 md:pb-24 text-white -mt-32 md:-mt-28 mb-12 border-b border-red-200 shadow-md">
         <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-12">
           <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight md:leading-tight mb-8">
             Curated premium gear. Discover best direct <span className="text-black">merchant deals</span>. noirkart it!
@@ -135,7 +157,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
                 {categoryProducts.map((product, index) => (
                   <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                    <ProductCard product={product} onAddToCart={handleAddToCart} onViewDetails={onProductClick} />
+                    <ProductCard product={product} onViewDetails={onProductClick} />
                   </motion.div>
                 ))}
               </div>
@@ -173,5 +195,6 @@ export function HomePage({ onProductClick }: HomePageProps) {
         </section>
       </div>
     </div>
+    </>
   );
 }

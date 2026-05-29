@@ -13,6 +13,7 @@ export interface Product {
   originalPrice?: number;
   discount?: string;
   buyLink?: string;
+  keywords?: string[];
 }
 
 interface ProductCardProps {
