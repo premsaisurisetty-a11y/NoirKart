@@ -8,9 +8,16 @@ const genAI = isGeminiConfigured ? new GoogleGenerativeAI(GEMINI_API_KEY) : null
 
 // Valid categories that match the existing NoirKart store
 const VALID_CATEGORIES = [
-  "Electronics", "Fashion", "Audio", "Watches",
-  "Accessories", "Workspace", "Grocery", "Chocolates",
-  "Beverages", "Gifts"
+  "Apparel & Accessories", "Shoes, Luggage & Bags, Watches", "Beauty",
+  "Kitchen", "Furniture", "Home", "Grocery", "Amazon Fresh", "Sports",
+  "Automotive", "Health and Personal Care", "Baby products",
+  "Echo & Alexa Devices", "Fire TV Devices", "Pet Products",
+  "Mobile Accessories", "Books", "Office Products", "Toys", "BISS",
+  "Lawn & Garden", "Video Games", "Personal Care Appliances",
+  "Personal Computers", "Smart Watches", "Televisions", "Electronics",
+  "Large Appliances", "Bicycles & Heavy Gym Equipment", "Tyres & Rims",
+  "Jewelry (Excluding silver & Gold coins)", "Data Storage Devices", "Mobile Phones", "Bill Payment & Recharges",
+  "All Other Categories"
 ];
 
 export interface GeneratedProduct {

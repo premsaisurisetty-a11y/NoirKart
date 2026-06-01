@@ -80,6 +80,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [rating, setRating] = useState("4.8");
   const [image, setImage] = useState("");
   const [buyLink, setBuyLink] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // File Uploader state
@@ -288,7 +289,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         category,
         unit,
         image: finalImage,
-        buyLink
+        buyLink,
+        keywords
       });
       triggerToast(`Product "${name}" updated successfully!`);
       setEditingProductId(null);
@@ -302,7 +304,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         category,
         unit,
         image: finalImage,
-        buyLink
+        buyLink,
+        keywords
       });
       triggerToast(`Product "${name}" added to catalog successfully!`);
     }
@@ -317,6 +320,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setImage("");
     setPreviewUrl("");
     setBuyLink("");
+    setKeywords([]);
   };
 
   // AI Product Generation handler — supports both text prompts and Amazon URLs
@@ -338,6 +342,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       setOriginalPrice(generated.originalPrice.toString());
       setDiscount(generated.discount);
       setCategory(generated.category);
+      setKeywords(generated.keywords || []);
       setUnit(generated.unit);
       setRating(generated.rating.toString());
       setImage(generated.image);
@@ -365,6 +370,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setOriginalPrice(product.originalPrice ? product.originalPrice.toString() : "");
     setDiscount(product.discount || "");
     setCategory(product.category);
+    setKeywords(product.keywords || []);
     setUnit(product.unit || "1 piece");
     setRating(product.rating.toString());
     setImage(product.image);
@@ -382,6 +388,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setOriginalPrice("");
     setDiscount("");
     setCategory("Electronics");
+    setKeywords([]);
     setUnit("1 piece");
     setRating("4.8");
     setImage("");
@@ -605,16 +612,41 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900"
                     >
-                      <option value="Electronics">Electronics</option>
-                      <option value="Fashion">Fashion</option>
-                      <option value="Audio">Audio</option>
-                      <option value="Watches">Watches</option>
-                      <option value="Accessories">Accessories</option>
-                      <option value="Workspace">Workspace</option>
+                      <option value="Apparel & Accessories">Apparel & Accessories</option>
+                      <option value="Shoes, Luggage & Bags, Watches">Shoes, Luggage & Bags, Watches</option>
+                      <option value="Beauty">Beauty</option>
+                      <option value="Kitchen">Kitchen</option>
+                      <option value="Furniture">Furniture</option>
+                      <option value="Home">Home</option>
                       <option value="Grocery">Grocery</option>
-                      <option value="Chocolates">Chocolates</option>
-                      <option value="Beverages">Beverages</option>
-                      <option value="Gifts">Gifts</option>
+                      <option value="Amazon Fresh">Amazon Fresh</option>
+                      <option value="Sports">Sports</option>
+                      <option value="Automotive">Automotive</option>
+                      <option value="Health and Personal Care">Health and Personal Care</option>
+                      <option value="Baby products">Baby products</option>
+                      <option value="Echo & Alexa Devices">Echo & Alexa Devices</option>
+                      <option value="Fire TV Devices">Fire TV Devices</option>
+                      <option value="Pet Products">Pet Products</option>
+                      <option value="Mobile Accessories">Mobile Accessories</option>
+                      <option value="Books">Books</option>
+                      <option value="Office Products">Office Products</option>
+                      <option value="Toys">Toys</option>
+                      <option value="BISS">BISS</option>
+                      <option value="Lawn & Garden">Lawn & Garden</option>
+                      <option value="Video Games">Video Games</option>
+                      <option value="Personal Care Appliances">Personal Care Appliances</option>
+                      <option value="Personal Computers">Personal Computers</option>
+                      <option value="Smart Watches">Smart Watches</option>
+                      <option value="Televisions">Televisions</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Large Appliances">Large Appliances</option>
+                      <option value="Bicycles & Heavy Gym Equipment">Bicycles & Heavy Gym Equipment</option>
+                      <option value="Tyres & Rims">Tyres & Rims</option>
+                      <option value="Jewelry (Excluding silver & Gold coins)">Jewelry (Excluding silver & Gold coins)</option>
+                      <option value="Data Storage Devices">Data Storage Devices</option>
+                      <option value="Mobile Phones">Mobile Phones</option>
+                      <option value="Bill Payment & Recharges">Bill Payment & Recharges</option>
+                      <option value="All Other Categories">All Other Categories</option>
                     </select>
                   </div>
                   <div>

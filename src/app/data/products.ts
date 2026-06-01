@@ -47,7 +47,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 3999,
     discount: "38% OFF",
     rating: 4.6,
-    category: "Accessories",
+    category: "Bags",
     unit: "1 piece",
     image: "https://images.unsplash.com/photo-1589642380614-4a8c2147b857?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=designer+aviator+sunglasses",
@@ -99,7 +99,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 5999,
     discount: "33% OFF",
     rating: 4.9,
-    category: "Accessories",
+    category: "Bags",
     unit: "1 piece",
     image: "https://images.unsplash.com/photo-1774791697894-42dacd95807d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=gold+designer+sunglasses",
@@ -151,7 +151,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 2999,
     discount: "40% OFF",
     rating: 4.8,
-    category: "Accessories",
+    category: "Bags",
     unit: "1 piece",
     image: "https://images.unsplash.com/photo-1732139637224-95da5661d5ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=polarized+sports+sunglasses",
@@ -268,7 +268,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 1499,
     discount: "33% OFF",
     rating: 4.8,
-    category: "Beverages",
+    category: "Cool Drinks",
     unit: "1 bag",
     image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=single-origin+premium+arabica+coffee",
@@ -281,7 +281,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 1999,
     discount: "35% OFF",
     rating: 4.9,
-    category: "Beverages",
+    category: "Cool Drinks",
     unit: "1 tin",
     image: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=ceremonial+grade+matcha+green+tea",
@@ -476,7 +476,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 999,
     discount: "40% OFF",
     rating: 4.7,
-    category: "Beverages",
+    category: "Cool Drinks",
     unit: "1 box",
     image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=green+tea+variety+pack+100+bags",
@@ -515,7 +515,7 @@ export const featuredProducts: Product[] = [
     originalPrice: 1799,
     discount: "44% OFF",
     rating: 4.5,
-    category: "Accessories",
+    category: "Bags",
     unit: "1 piece",
     image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=uv+protection+polarized+sunglasses+men",
@@ -578,32 +578,32 @@ export const featuredProducts: Product[] = [
 export const categories = [
   {
     id: 1,
-    name: "Electronics",
+    name: "Apparel & Accessories",
     image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 2,
-    name: "Fashion",
+    name: "Shoes, Luggage & Bags, Watches",
     image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 3,
-    name: "Audio",
+    name: "Beauty",
     image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 4,
-    name: "Accessories",
-    image: "https://images.unsplash.com/photo-1589642380614-4a8c2147b857?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    name: "Kitchen",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 5,
-    name: "Watches",
+    name: "Furniture",
     image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 6,
-    name: "Workspace",
+    name: "Home",
     image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
@@ -613,18 +613,143 @@ export const categories = [
   },
   {
     id: 8,
-    name: "Chocolates",
+    name: "Amazon Fresh",
     image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 9,
-    name: "Beverages",
+    name: "Sports",
     image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   },
   {
     id: 10,
-    name: "Gifts",
+    name: "Automotive",
     image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 11,
+    name: "Health and Personal Care",
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 12,
+    name: "Baby products",
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 13,
+    name: "Echo & Alexa Devices",
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 14,
+    name: "Fire TV Devices",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 15,
+    name: "Pet Products",
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 16,
+    name: "Mobile Accessories",
+    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 17,
+    name: "Books",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 18,
+    name: "Office Products",
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 19,
+    name: "Toys",
+    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 20,
+    name: "BISS",
+    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 21,
+    name: "Lawn & Garden",
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 22,
+    name: "Video Games",
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 23,
+    name: "Personal Care Appliances",
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 24,
+    name: "Personal Computers",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 25,
+    name: "Smart Watches",
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 26,
+    name: "Televisions",
+    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 27,
+    name: "Electronics",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 28,
+    name: "Large Appliances",
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 29,
+    name: "Bicycles & Heavy Gym Equipment",
+    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 30,
+    name: "Tyres & Rims",
+    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 31,
+    name: "Jewelry (Excluding silver & Gold coins)",
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 32,
+    name: "Data Storage Devices",
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 33,
+    name: "Mobile Phones",
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 34,
+    name: "Bill Payment & Recharges",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+  },
+  {
+    id: 35,
+    name: "All Other Categories",
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
   }
 ];
 

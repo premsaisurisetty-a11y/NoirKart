@@ -27,16 +27,23 @@ export function HomePage({ onProductClick }: HomePageProps) {
       product.category,
       product.unit || "",
       product.discount || "",
-      ...(product.keywords || [])
+      ...(Array.isArray(product.keywords) ? product.keywords : typeof product.keywords === 'string' ? [product.keywords] : [])
     ].join(" ").toLowerCase();
 
-    // Amazon-style: every search term must match somewhere in the product fields (AND logic)
-    return searchTerms.every(term =>
-      searchFields.includes(term)
-    );
+    // Highly Lenient OR logic: if ANY search term matches, show the product
+    return searchTerms.some(term => {
+      const singularTerm = term.endsWith('s') ? term.slice(0, -1) : term;
+      return searchFields.includes(term) || searchFields.includes(singularTerm) || searchFields.replace(/\s+/g, '').includes(term.replace(/\s+/g, ''));
+    });
   };
 
-  const filteredProducts = products.filter(p => matchesSearch(p, searchQuery));
+  const mappedProducts = products.map(p => {
+    const categoryName = p.category?.trim().toLowerCase();
+    if (categoryName === "accessories") return { ...p, category: "Bags" };
+    if (categoryName === "beverages") return { ...p, category: "Cool Drinks" };
+    return p;
+  });
+  const filteredProducts = mappedProducts.filter(p => matchesSearch(p, searchQuery));
 
   const populatedCategories = Array.from(new Set(filteredProducts.map(p => p.category)))
     .sort((a, b) => {
@@ -71,9 +78,11 @@ export function HomePage({ onProductClick }: HomePageProps) {
       />
       <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
         {/* Zomato-Style Hero — Bold Red & White */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] pt-32 pb-20 md:pt-36 md:pb-24 text-white -mt-32 md:-mt-28 mb-12 border-b border-red-200 shadow-md">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] pt-32 pb-20 md:pt-36 md:pb-24 text-white -mt-32 md:-mt-28 mb-12 border-b border-red-200 shadow-md">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-12">
           <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -82,7 +91,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
           </motion.h1>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="w-full max-w-3xl bg-white rounded-2xl p-2 shadow-xl flex items-center gap-3 border border-gray-200 text-gray-800">
+            className="w-full max-w-3xl bg-white rounded-2xl p-2 shadow-xl border border-gray-200 text-gray-800 relative z-50">
             <div className="flex items-center gap-3 px-4 py-3 w-full">
               <Search className="text-gray-400 flex-shrink-0" size={22} />
               <input type="text" placeholder="Search headphones, keyboards, watches, fashion..."
@@ -94,33 +103,44 @@ export function HomePage({ onProductClick }: HomePageProps) {
                 </button>
               )}
             </div>
+
+            {searchQuery && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 max-h-96 overflow-y-auto">
+                {filteredProducts.length > 0 ? (
+                  <div className="py-2">
+                    <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
+                      Suggestions
+                    </div>
+                    {filteredProducts.slice(0, 6).map((p) => (
+                      <div key={p.id} onClick={() => onProductClick(p)} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors group">
+                        <div className="w-12 h-12 bg-white border border-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 p-1 group-hover:border-gray-200">
+                          <img src={p.image} alt={p.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
+                          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">{p.category} • <span className="text-[#E23744]">₹{p.price}</span></p>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-300 group-hover:text-[#E23744]" />
+                      </div>
+                    ))}
+                    {filteredProducts.length > 6 && (
+                       <div className="px-4 py-3 text-center text-xs font-bold text-[#E23744] bg-red-50/30 hover:bg-red-50 cursor-pointer transition-colors"
+                            onClick={() => { const el = document.getElementById('category-section-' + filteredProducts[0].category.toLowerCase()); if(el) el.scrollIntoView({behavior: 'smooth'}); }}>
+                         View all {filteredProducts.length} matching products 👇
+                       </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-4 py-8 text-center text-gray-500 text-sm flex flex-col items-center">
+                    <span className="text-3xl mb-2">🔍</span>
+                    No matching items found for "{searchQuery}"
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-16 max-w-5xl">
-            {[
-              { title: "TECH SHOWCASE", subtitle: "CURATED AUDIO & SHACK", badge: "UP TO 40% OFF", image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400", cat: "Electronics" },
-              { title: "LUXURY DESIGNS", subtitle: "CHRONOGRAPHS & GEAR", badge: "UP TO 35% OFF", image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400", cat: "Fashion" },
-              { title: "WORKSPACE RIGS", subtitle: "DESK & RIG ACCESSORIES", badge: "UP TO 30% OFF", image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400", cat: "Workspace" }
-            ].map((card, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }} onClick={() => scrollToCategory(card.cat)}
-                className="bg-white rounded-3xl p-5 border border-gray-200 flex items-center justify-between shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group text-gray-800">
-                <div className="text-left flex-1 pr-3 flex flex-col justify-between h-full">
-                  <div>
-                    <span className="text-[9px] bg-red-50 text-[#E23744] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider inline-block mb-1.5">{card.badge}</span>
-                    <h3 className="text-base font-black text-gray-900 tracking-tight leading-tight uppercase">{card.title}</h3>
-                    <p className="text-[10px] text-gray-400 font-bold tracking-wide mt-0.5 leading-snug">{card.subtitle}</p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-[#E23744] group-hover:bg-[#CB202D] text-white flex items-center justify-center transition-colors shadow-sm mt-4">
-                    <ChevronRight size={16} />
-                  </div>
-                </div>
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
-                  <img src={card.image} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+
         </div>
       </section>
 
@@ -151,7 +171,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
           return (
             <section key={categoryName} id={`category-section-${categoryName.toLowerCase()}`} className="mb-8 scroll-mt-32">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">{categoryName === "Fashion" ? "Fashion & Accessories" : categoryName}</h2>
+                <h2 className="text-xl font-bold text-gray-800">{categoryName === "Fashion" ? "Fashion & Accessories" : categoryName === "Bags" ? "Bags Under 1000" : categoryName}</h2>
                 <button className="flex items-center gap-1 text-[#E23744] font-semibold text-sm hover:gap-2 transition-all">see all <ChevronRight size={16} /></button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">

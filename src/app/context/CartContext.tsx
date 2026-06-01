@@ -126,10 +126,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
 
         const patched = parsed.map((p: any) => {
+          let updatedP = { ...p };
           if ((!p.keywords || p.keywords.length === 0) && keywordsMap.has(p.id)) {
-            return { ...p, keywords: keywordsMap.get(p.id) };
+            updatedP.keywords = keywordsMap.get(p.id);
           }
-          return p;
+          if (updatedP.category === "Accessories") {
+            updatedP.category = "Bags";
+          }
+          return updatedP;
         });
 
         // Always add any missing default products (e.g. newly added Amazon products)
@@ -137,7 +141,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const missing = featuredProducts.filter(fp => !existingIds.has(fp.id));
         const merged = [...patched, ...missing];
 
-        if (missing.length > 0 || patched.length !== parsed.length) {
+        // We check if we modified anything by comparing strings, or just always save to be safe
+        if (missing.length > 0 || JSON.stringify(patched) !== JSON.stringify(parsed)) {
           localStorage.setItem("noirkart_products", JSON.stringify(merged));
         }
         return merged;
@@ -169,10 +174,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
               originalPrice: data.originalPrice ? Number(data.originalPrice) : undefined,
               discount: data.discount || undefined,
               rating: Number(data.rating),
-              category: data.category,
+              category: data.category === "Accessories" ? "Bags" : data.category === "Beverages" ? "Cool Drinks" : data.category,
               unit: data.unit,
               image: data.image,
-              buyLink: data.buyLink
+              buyLink: data.buyLink,
+              keywords: data.keywords || []
             });
           });
 
