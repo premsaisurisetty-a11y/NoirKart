@@ -126,8 +126,8 @@ export function HomePage({ onProductClick }: HomePageProps) {
             </div>
 
             {/* Scrollable Pills */}
-            <div className="flex-1 overflow-x-auto scrollbar-hide mask-edges">
-              <div className="flex gap-2 pb-2 px-2 whitespace-nowrap">
+            <div className="flex-1 overflow-x-auto scrollbar-hide mask-edges ml-2">
+              <div className="flex gap-2 pb-2 px-6 whitespace-nowrap">
                 {categories.filter(c => c.name !== "Bill Payment & Recharges" && c.name !== "All Other Categories").map((cat, i) => (
                   <button key={i} onClick={() => setSearchQuery(cat.name)}
                     className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm">
