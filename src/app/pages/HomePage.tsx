@@ -18,8 +18,17 @@ export function HomePage({ onProductClick }: HomePageProps) {
 
   const matchesSearch = (product: Product, query: string): boolean => {
     if (!query.trim()) return true;
-    const q = query.toLowerCase().trim();
-    const searchTerms = q.split(/\s+/).filter(Boolean);
+    
+    // Check if the query exactly matches a known category to use its keywords
+    const matchedCategory = categories.find(c => c.name.toLowerCase() === query.toLowerCase().trim());
+    let searchTerms: string[] = [];
+
+    if (matchedCategory && matchedCategory.keywords) {
+      searchTerms = matchedCategory.keywords.map(k => k.toLowerCase());
+    } else {
+      const q = query.toLowerCase().trim();
+      searchTerms = q.split(/\s+/).filter(t => t !== '&' && t !== '|' && t !== 'and');
+    }
 
     // Build a searchable text blob for the product
     const searchFields = [
@@ -93,23 +102,10 @@ export function HomePage({ onProductClick }: HomePageProps) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="w-full max-w-5xl overflow-x-auto scrollbar-hide mb-6 relative mask-edges">
             <div className="flex gap-2 pb-2 px-4 whitespace-nowrap justify-start md:justify-center">
-              {[
-                "Apparel & Accessories", "Shoes, Luggage & Bags", "Watches", "Beauty",
-                "Kitchen", "Furniture", "Home",
-                "Grocery", "Amazon Fresh", "Sports", "Automotive", "Health & Personal Care", "Baby Products",
-                "Echo & Alexa Devices", "Fire TV Devices",
-                "Pet Products", "Mobile Accessories",
-                "Books", "Office Products", "Toys",
-                "BISS", "Lawn & Garden", "Video Games",
-                "Personal Care Appliances",
-                "Personal Computers", "Smart Watches", "Televisions", "Electronics", "Large Appliances",
-                "Bicycles & Heavy Gym Equipment", "Tyres & Rims",
-                "Jewelry", "Data Storage Devices",
-                "Mobile Phones"
-              ].map((cat, i) => (
-                <button key={i} onClick={() => setSearchQuery(cat)}
+              {categories.filter(c => c.name !== "Bill Payment & Recharges" && c.name !== "All Other Categories").map((cat, i) => (
+                <button key={i} onClick={() => setSearchQuery(cat.name)}
                   className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm">
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>

@@ -579,177 +579,212 @@ export const categories = [
   {
     id: 1,
     name: "Apparel & Accessories",
-    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["apparel", "clothing", "fashion", "garment", "wear", "shirt", "pant", "accessories", "sunglasses", "belt", "wallet", "bag"]
   },
   {
     id: 2,
     name: "Shoes, Luggage & Bags, Watches",
-    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["shoe", "sneaker", "footwear", "luggage", "suitcase", "bag", "backpack", "messenger", "duffel", "watch", "smartwatch", "chronograph", "timepiece"]
   },
   {
     id: 3,
     name: "Beauty",
-    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["beauty", "makeup", "cosmetics", "skincare", "perfume", "fragrance"]
   },
   {
     id: 4,
     name: "Kitchen",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["kitchen", "cookware", "dining", "utensil", "appliance", "kettle", "knife"]
   },
   {
     id: 5,
     name: "Furniture",
-    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["furniture", "chair", "desk", "table", "sofa", "bed", "stand"]
   },
   {
     id: 6,
     name: "Home",
-    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["home", "decor", "lamp", "candle", "frame", "cushion"]
   },
   {
     id: 7,
     name: "Grocery",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["grocery", "food", "snack", "honey", "saffron", "coffee", "tea", "dry fruits", "cookies", "chocolate"]
   },
   {
     id: 8,
     name: "Amazon Fresh",
-    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["fresh", "vegetable", "fruit", "meat", "dairy"]
   },
   {
     id: 9,
     name: "Sports",
-    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["sports", "fitness", "gym", "yoga", "athletic", "equipment"]
   },
   {
     id: 10,
     name: "Automotive",
-    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["automotive", "car", "auto", "vehicle", "accessory"]
   },
   {
     id: 11,
     name: "Health and Personal Care",
-    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["health", "personal care", "wellness", "supplement", "vitamin"]
   },
   {
     id: 12,
     name: "Baby products",
-    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["baby", "infant", "toddler", "diaper", "toy"]
   },
   {
     id: 13,
     name: "Echo & Alexa Devices",
-    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["echo", "alexa", "smart speaker", "amazon device"]
   },
   {
     id: 14,
     name: "Fire TV Devices",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["fire tv", "streaming", "stick", "firestick"]
   },
   {
     id: 15,
     name: "Pet Products",
-    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["pet", "dog", "cat", "bird", "food", "toy", "collar"]
   },
   {
     id: 16,
     name: "Mobile Accessories",
-    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["mobile accessory", "charger", "cable", "power bank", "case", "cover", "screen protector", "earbuds"]
   },
   {
     id: 17,
     name: "Books",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["book", "novel", "literature", "journal", "diary"]
   },
   {
     id: 18,
     name: "Office Products",
-    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["office", "stationery", "desk organizer", "pen", "notebook", "paper", "workspace"]
   },
   {
     id: 19,
     name: "Toys",
-    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["toy", "game", "puzzle", "action figure", "doll"]
   },
   {
     id: 20,
     name: "BISS",
-    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["industrial", "scientific", "supplies", "business"]
   },
   {
     id: 21,
     name: "Lawn & Garden",
-    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["lawn", "garden", "plant", "seed", "tool", "pot"]
   },
   {
     id: 22,
     name: "Video Games",
-    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["video game", "console", "playstation", "xbox", "nintendo", "controller"]
   },
   {
     id: 23,
     name: "Personal Care Appliances",
-    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["appliance", "trimmer", "shaver", "hair dryer", "straightener"]
   },
   {
     id: 24,
     name: "Personal Computers",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["pc", "computer", "laptop", "desktop", "monitor", "macbook"]
   },
   {
     id: 25,
     name: "Smart Watches",
-    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["smart watch", "fitness band", "tracker", "wearable"]
   },
   {
     id: 26,
     name: "Televisions",
-    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1496664444929-8c75efb9546f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["tv", "television", "smart tv", "projector", "screen", "display"]
   },
   {
     id: 27,
     name: "Electronics",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["electronics", "gadget", "device", "camera", "led"]
   },
   {
     id: 28,
     name: "Large Appliances",
-    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["appliance", "refrigerator", "washing machine", "ac", "air conditioner", "microwave", "oven"]
   },
   {
     id: 29,
     name: "Bicycles & Heavy Gym Equipment",
-    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["bicycle", "bike", "cycle", "gym equipment", "treadmill", "dumbbells", "weights"]
   },
   {
     id: 30,
     name: "Tyres & Rims",
-    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["tyre", "tire", "rim", "wheel"]
   },
   {
     id: 31,
     name: "Jewelry (Excluding silver & Gold coins)",
-    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1563253746-350a0a877afa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["jewelry", "jewellery", "ring", "necklace", "earring", "bracelet", "gold", "silver"]
   },
   {
     id: 32,
     name: "Data Storage Devices",
-    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["storage", "hard drive", "hdd", "ssd", "pen drive", "usb flash", "memory card"]
   },
   {
     id: 33,
     name: "Mobile Phones",
-    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["mobile phone", "smartphone", "cellphone", "iphone", "android"]
   },
   {
     id: 34,
     name: "Bill Payment & Recharges",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["bill payment", "recharge", "utility"]
   },
   {
     id: 35,
     name: "All Other Categories",
-    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    keywords: ["other", "misc"]
   }
 ];
 
