@@ -145,16 +145,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <section className="mb-8">
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Shop by Category</h2>
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {categories.map((category) => (
-                <CategoryCard key={category.id} name={category.name} image={category.image} onClick={() => scrollToCategory(category.name)} />
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         {searchQuery && filteredProducts.length === 0 && (
           <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center mb-8">
