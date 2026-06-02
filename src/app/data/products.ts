@@ -598,13 +598,13 @@ export const categories = [
     id: 4,
     name: "Kitchen",
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["kitchen", "cookware", "dining", "utensil", "appliance", "kettle", "knife"]
+    keywords: ["kitchen", "cookware", "dining", "utensil", "kitchen appliance", "kettle", "knife"]
   },
   {
     id: 5,
     name: "Furniture",
     image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["furniture", "chair", "desk", "table", "sofa", "bed", "stand"]
+    keywords: ["furniture", "chair", "desk", "table", "sofa", "bed"]
   },
   {
     id: 6,
@@ -646,7 +646,7 @@ export const categories = [
     id: 12,
     name: "Baby products",
     image: "https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["baby", "infant", "toddler", "diaper", "toy"]
+    keywords: ["baby", "infant", "toddler", "diaper", "baby toy", "stroller"]
   },
   {
     id: 13,
@@ -664,7 +664,7 @@ export const categories = [
     id: 15,
     name: "Pet Products",
     image: "https://images.unsplash.com/photo-1670404160620-a3a86428560e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["pet", "dog", "cat", "bird", "food", "toy", "collar"]
+    keywords: ["dog", "cat", "bird", "puppy", "kitten", "pet food", "dog food", "cat food", "pet toy", "collar", "leash", "aquarium"]
   },
   {
     id: 16,
@@ -688,7 +688,7 @@ export const categories = [
     id: 19,
     name: "Toys",
     image: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["toy", "game", "puzzle", "action figure", "doll"]
+    keywords: ["kids toy", "board game", "puzzle", "action figure", "doll", "lego"]
   },
   {
     id: 20,
@@ -712,7 +712,7 @@ export const categories = [
     id: 23,
     name: "Personal Care Appliances",
     image: "https://images.unsplash.com/photo-1567928513899-997d98489fbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    keywords: ["appliance", "trimmer", "shaver", "hair dryer", "straightener"]
+    keywords: ["trimmer", "shaver", "hair dryer", "straightener", "epilator", "grooming"]
   },
   {
     id: 24,

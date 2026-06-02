@@ -41,8 +41,17 @@ export function HomePage({ onProductClick }: HomePageProps) {
 
     // Highly Lenient OR logic: if ANY search term matches, show the product
     return searchTerms.some(term => {
-      const singularTerm = term.endsWith('s') ? term.slice(0, -1) : term;
-      return searchFields.includes(term) || searchFields.includes(singularTerm) || searchFields.replace(/\s+/g, '').includes(term.replace(/\s+/g, ''));
+      const lowerTerm = term.toLowerCase();
+      const singularTerm = lowerTerm.endsWith('s') ? lowerTerm.slice(0, -1) : lowerTerm;
+      
+      try {
+        const termRegex = new RegExp(`\\b${lowerTerm}\\b`, 'i');
+        const singularRegex = new RegExp(`\\b${singularTerm}\\b`, 'i');
+        return termRegex.test(searchFields) || singularRegex.test(searchFields) || searchFields.replace(/\s+/g, '').includes(lowerTerm.replace(/\s+/g, ''));
+      } catch (e) {
+        // Fallback for weird characters that break regex
+        return searchFields.includes(lowerTerm) || searchFields.includes(singularTerm) || searchFields.replace(/\s+/g, '').includes(lowerTerm.replace(/\s+/g, ''));
+      }
     });
   };
 
