@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ChevronRight, Search, X } from "lucide-react";
+import { ChevronRight, ChevronDown, Search, X } from "lucide-react";
 import { ProductCard, Product } from "../components/ProductCard";
 import { CategoryCard } from "../components/CategoryCard";
 import { useCart } from "../context/CartContext";
@@ -109,14 +109,32 @@ export function HomePage({ onProductClick }: HomePageProps) {
           </motion.h1>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="w-full max-w-5xl overflow-x-auto scrollbar-hide mb-6 relative mask-edges">
-            <div className="flex gap-2 pb-2 px-4 whitespace-nowrap justify-start md:justify-center">
-              {categories.filter(c => c.name !== "Bill Payment & Recharges" && c.name !== "All Other Categories").map((cat, i) => (
-                <button key={i} onClick={() => setSearchQuery(cat.name)}
-                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm">
-                  {cat.name}
-                </button>
-              ))}
+            className="w-full max-w-6xl mb-6 relative px-4 flex items-center gap-2">
+            
+            {/* Categories Dropdown */}
+            <div className="relative group shrink-0 z-50">
+              <button className="px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white text-sm font-bold transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm flex items-center gap-1">
+                Categories <ChevronDown size={14} />
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 hidden group-hover:block max-h-96 overflow-y-auto text-left z-[100] py-1">
+                {categories.map((cat) => (
+                  <button key={cat.id} onClick={() => setSearchQuery(cat.name)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#E23744] border-b border-gray-50 last:border-none transition-colors cursor-pointer font-medium">
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scrollable Pills */}
+            <div className="flex-1 overflow-x-auto scrollbar-hide mask-edges">
+              <div className="flex gap-2 pb-2 px-2 whitespace-nowrap">
+                {categories.filter(c => c.name !== "Bill Payment & Recharges" && c.name !== "All Other Categories").map((cat, i) => (
+                  <button key={i} onClick={() => setSearchQuery(cat.name)}
+                    className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm">
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
 
