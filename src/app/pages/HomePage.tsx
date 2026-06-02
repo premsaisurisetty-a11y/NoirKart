@@ -86,9 +86,34 @@ export function HomePage({ onProductClick }: HomePageProps) {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-12">
           <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight md:leading-tight mb-8">
+            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight md:leading-tight mb-6">
             Curated premium gear. Discover best direct <span className="text-black">merchant deals</span>. noirkart it!
           </motion.h1>
+
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="w-full max-w-5xl overflow-x-auto scrollbar-hide mb-6 relative mask-edges">
+            <div className="flex gap-2 pb-2 px-4 whitespace-nowrap justify-start md:justify-center">
+              {[
+                "Apparel & Accessories", "Shoes, Luggage & Bags", "Watches", "Beauty",
+                "Kitchen", "Furniture", "Home",
+                "Grocery", "Amazon Fresh", "Sports", "Automotive", "Health & Personal Care", "Baby Products",
+                "Echo & Alexa Devices", "Fire TV Devices",
+                "Pet Products", "Mobile Accessories",
+                "Books", "Office Products", "Toys",
+                "BISS", "Lawn & Garden", "Video Games",
+                "Personal Care Appliances",
+                "Personal Computers", "Smart Watches", "Televisions", "Electronics", "Large Appliances",
+                "Bicycles & Heavy Gym Equipment", "Tyres & Rims",
+                "Jewelry", "Data Storage Devices",
+                "Mobile Phones"
+              ].map((cat, i) => (
+                <button key={i} onClick={() => setSearchQuery(cat)}
+                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm cursor-pointer whitespace-nowrap shadow-sm">
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1 }}
             className="w-full max-w-3xl bg-white rounded-2xl p-2 shadow-xl border border-gray-200 text-gray-800 relative z-50">
