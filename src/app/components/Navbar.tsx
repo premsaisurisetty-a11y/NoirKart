@@ -21,8 +21,6 @@ interface NavbarProps {
 }
 
 export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }: NavbarProps) {
-  
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +33,9 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     activeUserEmail,
     userName: name,
     loginUser,
-    logoutUser
+    logoutUser,
+    isLoginOpen,
+    setIsLoginOpen
   } = useCart();
 
   const triggerToast = (msg: string) => {

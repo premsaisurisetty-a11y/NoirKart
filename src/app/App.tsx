@@ -13,7 +13,8 @@ type Page = "home" | "product" | "cart" | "admin";
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { cartCount, isAdmin } = useCart();
+  const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
+  const { cartCount, isAdmin, isLoggedIn, setIsLoginOpen } = useCart();
 
   // Redirect to home if they log out or lose admin privileges while viewing the admin panel
   useEffect(() => {
@@ -22,10 +23,25 @@ function AppContent() {
     }
   }, [isAdmin, currentPage]);
 
+  // Resume product view if they just logged in
+  useEffect(() => {
+    if (isLoggedIn && pendingProduct) {
+      setSelectedProduct(pendingProduct);
+      setCurrentPage("product");
+      setPendingProduct(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [isLoggedIn, pendingProduct]);
+
   const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
-    setCurrentPage("product");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!isLoggedIn) {
+      setPendingProduct(product);
+      setIsLoginOpen(true);
+    } else {
+      setSelectedProduct(product);
+      setCurrentPage("product");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleCartClick = () => {

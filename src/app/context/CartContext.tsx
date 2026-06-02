@@ -31,6 +31,10 @@ interface CartContextType {
   userName: string;
   loginUser: (email: string, name: string) => void;
   logoutUser: () => void;
+
+  // Login Modal State
+  isLoginOpen: boolean;
+  setIsLoginOpen: (isOpen: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -44,6 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [activeUserEmail, setActiveUserEmail] = useState("");
   const [userName, setUserName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   // Monitor Authentication state changes (Firebase Auth with Offline Fallback)
   useEffect(() => {
@@ -383,6 +388,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         userName,
         loginUser,
         logoutUser,
+        isLoginOpen,
+        setIsLoginOpen,
       }}
     >
       {children}
