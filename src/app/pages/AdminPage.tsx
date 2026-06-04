@@ -607,47 +607,51 @@ export function AdminPage({ onBack }: AdminPageProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
-                    <select
+                    <input
+                      type="text"
+                      list="category-suggestions"
+                      placeholder="e.g., Apparel & Accessories"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900"
-                    >
-                      <option value="Apparel & Accessories">Apparel & Accessories</option>
-                      <option value="Shoes, Luggage & Bags, Watches">Shoes, Luggage & Bags, Watches</option>
-                      <option value="Beauty">Beauty</option>
-                      <option value="Kitchen">Kitchen</option>
-                      <option value="Furniture">Furniture</option>
-                      <option value="Home">Home</option>
-                      <option value="Grocery">Grocery</option>
-                      <option value="Amazon Fresh">Amazon Fresh</option>
-                      <option value="Sports">Sports</option>
-                      <option value="Automotive">Automotive</option>
-                      <option value="Health and Personal Care">Health and Personal Care</option>
-                      <option value="Baby products">Baby products</option>
-                      <option value="Echo & Alexa Devices">Echo & Alexa Devices</option>
-                      <option value="Fire TV Devices">Fire TV Devices</option>
-                      <option value="Pet Products">Pet Products</option>
-                      <option value="Mobile Accessories">Mobile Accessories</option>
-                      <option value="Books">Books</option>
-                      <option value="Office Products">Office Products</option>
-                      <option value="Toys">Toys</option>
-                      <option value="BISS">BISS</option>
-                      <option value="Lawn & Garden">Lawn & Garden</option>
-                      <option value="Video Games">Video Games</option>
-                      <option value="Personal Care Appliances">Personal Care Appliances</option>
-                      <option value="Personal Computers">Personal Computers</option>
-                      <option value="Smart Watches">Smart Watches</option>
-                      <option value="Televisions">Televisions</option>
-                      <option value="Electronics">Electronics</option>
-                      <option value="Large Appliances">Large Appliances</option>
-                      <option value="Bicycles & Heavy Gym Equipment">Bicycles & Heavy Gym Equipment</option>
-                      <option value="Tyres & Rims">Tyres & Rims</option>
-                      <option value="Jewelry (Excluding silver & Gold coins)">Jewelry (Excluding silver & Gold coins)</option>
-                      <option value="Data Storage Devices">Data Storage Devices</option>
-                      <option value="Mobile Phones">Mobile Phones</option>
-                      <option value="Bill Payment & Recharges">Bill Payment & Recharges</option>
-                      <option value="All Other Categories">All Other Categories</option>
-                    </select>
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
+                    />
+                    <datalist id="category-suggestions">
+                      <option value="Apparel & Accessories" />
+                      <option value="Shoes, Luggage & Bags, Watches" />
+                      <option value="Beauty" />
+                      <option value="Kitchen" />
+                      <option value="Furniture" />
+                      <option value="Home" />
+                      <option value="Grocery" />
+                      <option value="Amazon Fresh" />
+                      <option value="Sports" />
+                      <option value="Automotive" />
+                      <option value="Health and Personal Care" />
+                      <option value="Baby products" />
+                      <option value="Echo & Alexa Devices" />
+                      <option value="Fire TV Devices" />
+                      <option value="Pet Products" />
+                      <option value="Mobile Accessories" />
+                      <option value="Books" />
+                      <option value="Office Products" />
+                      <option value="Toys" />
+                      <option value="BISS" />
+                      <option value="Lawn & Garden" />
+                      <option value="Video Games" />
+                      <option value="Personal Care Appliances" />
+                      <option value="Personal Computers" />
+                      <option value="Smart Watches" />
+                      <option value="Televisions" />
+                      <option value="Electronics" />
+                      <option value="Large Appliances" />
+                      <option value="Bicycles & Heavy Gym Equipment" />
+                      <option value="Tyres & Rims" />
+                      <option value="Jewelry (Excluding silver & Gold coins)" />
+                      <option value="Data Storage Devices" />
+                      <option value="Mobile Phones" />
+                      <option value="Bill Payment & Recharges" />
+                      <option value="All Other Categories" />
+                    </datalist>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Discount label</label>
