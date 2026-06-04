@@ -34,6 +34,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
     const searchFields = [
       product.name,
       product.category,
+      product.subCategory || "",
       product.unit || "",
       product.discount || "",
       ...(Array.isArray(product.keywords) ? product.keywords : typeof product.keywords === 'string' ? [product.keywords] : [])
@@ -44,13 +45,27 @@ export function HomePage({ onProductClick }: HomePageProps) {
       const lowerTerm = term.toLowerCase();
       const singularTerm = lowerTerm.endsWith('s') ? lowerTerm.slice(0, -1) : lowerTerm;
       
+      const normalizedSearchFields = searchFields.replace(/[^a-z0-9]/g, '');
+      const normalizedLowerTerm = lowerTerm.replace(/[^a-z0-9]/g, '');
+      const normalizedSingularTerm = singularTerm.replace(/[^a-z0-9]/g, '');
+
       try {
         const termRegex = new RegExp(`\\b${lowerTerm}\\b`, 'i');
         const singularRegex = new RegExp(`\\b${singularTerm}\\b`, 'i');
-        return termRegex.test(searchFields) || singularRegex.test(searchFields) || searchFields.replace(/\s+/g, '').includes(lowerTerm.replace(/\s+/g, ''));
+        return (
+          termRegex.test(searchFields) ||
+          singularRegex.test(searchFields) ||
+          normalizedSearchFields.includes(normalizedLowerTerm) ||
+          normalizedSearchFields.includes(normalizedSingularTerm)
+        );
       } catch (e) {
         // Fallback for weird characters that break regex
-        return searchFields.includes(lowerTerm) || searchFields.includes(singularTerm) || searchFields.replace(/\s+/g, '').includes(lowerTerm.replace(/\s+/g, ''));
+        return (
+          searchFields.includes(lowerTerm) ||
+          searchFields.includes(singularTerm) ||
+          normalizedSearchFields.includes(normalizedLowerTerm) ||
+          normalizedSearchFields.includes(normalizedSingularTerm)
+        );
       }
     });
   };
