@@ -43,7 +43,9 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
               )}
             </div>
             <div>
-              <div className="inline-block px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">{product.category}</div>
+              <div className="inline-block px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">
+                {product.category}{product.subCategory ? ` • ${product.subCategory}` : ""}
+              </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">{product.name}</h1>
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex gap-0.5">

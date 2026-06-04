@@ -26,6 +26,7 @@ export interface GeneratedProduct {
   originalPrice: number;
   discount: string;
   category: string;
+  subCategory?: string;
   unit: string;
   rating: number;
   image: string;
@@ -168,6 +169,7 @@ RULES:
 3. "originalPrice" — The MRP / original price BEFORE discount. Must be higher than "price". Whole number.
 4. "discount" — The discount percentage label, formatted exactly like "35% OFF". Calculate from price and originalPrice.
 5. "category" — MUST be exactly one of: ${VALID_CATEGORIES.join(", ")}. Pick the closest match.
+5b. "subCategory" — A relevant sub-category classification, e.g., "Headphones", "Earbuds", "Watches", "T-Shirts", "Backpacks", "Candles", "Snacks", "Office Supplies", "Mice & Keyboards", etc.
 6. "unit" — e.g., "1 piece", "1 set", "1 pack", "1 box", "1 bottle", "1 bag", "1 tin", "1 box (16 pcs)" etc.
 7. "rating" — A realistic rating between 4.3 and 5.0 with one decimal place.
 8. "imageSearchTerm" — A 2-4 word English search term for finding a matching product photo on Unsplash. Be specific and visual.
@@ -176,7 +178,7 @@ RULES:
 
 RESPOND ONLY with a valid JSON object. No markdown, no code fences.
 Example output:
-{"name":"Premium Wireless Headphones","price":2999,"originalPrice":4999,"discount":"40% OFF","category":"Audio","unit":"1 piece","rating":4.8,"imageSearchTerm":"wireless headphones black","buySearchTerm":"premium wireless headphones","keywords":["headphones","audio","music"]}`;
+{"name":"Premium Wireless Headphones","price":2999,"originalPrice":4999,"discount":"40% OFF","category":"Audio","subCategory":"Headphones","unit":"1 piece","rating":4.8,"imageSearchTerm":"wireless headphones black","buySearchTerm":"premium wireless headphones","keywords":["headphones","audio","music"]}`;
 
   let responseText = "";
   try {
@@ -250,6 +252,7 @@ Example output:
     originalPrice: originalPrice,
     discount: `${discountPercent}% OFF`,
     category,
+    subCategory: parsed.subCategory ? String(parsed.subCategory).slice(0, 50) : undefined,
     unit: String(parsed.unit || "1 piece"),
     rating: Math.min(5, Math.max(1, Number((Number(parsed.rating) || 4.7).toFixed(1)))),
     image: finalImage,

@@ -64,7 +64,9 @@ export function CartPage({ onBack }: CartPageProps) {
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{item.category}</span>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                      {item.category}{item.subCategory ? ` • ${item.subCategory}` : ""}
+                    </span>
                     <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-base">{item.name}</h3>
                     <p className="text-xs text-gray-400">{item.unit || "1 unit"}</p>
                     <span className="text-base font-bold text-gray-900 mt-2 block">₹{item.price}</span>

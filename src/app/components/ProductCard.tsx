@@ -9,6 +9,7 @@ export interface Product {
   image: string;
   rating: number;
   category: string;
+  subCategory?: string;
   unit?: string;
   originalPrice?: number;
   discount?: string;
@@ -56,7 +57,9 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
           </div>
         </div>
         <div className="mb-2">
-          <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{product.category}</span>
+          <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+            {product.category}{product.subCategory ? ` • ${product.subCategory}` : ""}
+          </span>
           <h3 className="text-sm font-semibold text-gray-800 mt-0.5 mb-1 line-clamp-2 leading-snug min-h-[40px]">{product.name}</h3>
           <p className="text-xs text-gray-400">{product.unit || "1 unit"}</p>
         </div>

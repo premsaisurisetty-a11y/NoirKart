@@ -180,6 +180,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               discount: data.discount || undefined,
               rating: Number(data.rating),
               category: data.category === "Accessories" ? "Bags" : data.category === "Beverages" ? "Cool Drinks" : data.category,
+              subCategory: data.subCategory || undefined,
               unit: data.unit,
               image: data.image,
               buyLink: data.buyLink,
@@ -247,6 +248,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           discount: newProduct.discount || null,
           rating: newProduct.rating,
           category: newProduct.category,
+          subCategory: newProduct.subCategory || null,
           unit: newProduct.unit,
           image: newProduct.image,
           buyLink: newProduct.buyLink
@@ -333,6 +335,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             discount: updatedProduct.discount || null,
             rating: updatedProduct.rating,
             category: updatedProduct.category,
+            subCategory: updatedProduct.subCategory || null,
             unit: updatedProduct.unit || null,
             image: updatedProduct.image,
             buyLink: updatedProduct.buyLink

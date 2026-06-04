@@ -76,6 +76,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [originalPrice, setOriginalPrice] = useState("");
   const [discount, setDiscount] = useState("");
   const [category, setCategory] = useState("Electronics");
+  const [subCategory, setSubCategory] = useState("");
   const [unit, setUnit] = useState("1 piece");
   const [rating, setRating] = useState("4.8");
   const [image, setImage] = useState("");
@@ -287,6 +288,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
         discount: discount || undefined,
         rating: parseFloat(rating) || 4.8,
         category,
+        subCategory: subCategory || undefined,
         unit,
         image: finalImage,
         buyLink,
@@ -302,6 +304,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
         discount: discount || undefined,
         rating: parseFloat(rating) || 4.8,
         category,
+        subCategory: subCategory || undefined,
         unit,
         image: finalImage,
         buyLink,
@@ -315,6 +318,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setPrice("");
     setOriginalPrice("");
     setDiscount("");
+    setSubCategory("");
     setUnit("1 piece");
     setRating("4.8");
     setImage("");
@@ -342,6 +346,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       setOriginalPrice(generated.originalPrice.toString());
       setDiscount(generated.discount);
       setCategory(generated.category);
+      setSubCategory(generated.subCategory || "");
       setKeywords(generated.keywords || []);
       setUnit(generated.unit);
       setRating(generated.rating.toString());
@@ -370,6 +375,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setOriginalPrice(product.originalPrice ? product.originalPrice.toString() : "");
     setDiscount(product.discount || "");
     setCategory(product.category);
+    setSubCategory(product.subCategory || "");
     setKeywords(product.keywords || []);
     setUnit(product.unit || "1 piece");
     setRating(product.rating.toString());
@@ -388,6 +394,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setOriginalPrice("");
     setDiscount("");
     setCategory("Electronics");
+    setSubCategory("");
     setKeywords([]);
     setUnit("1 piece");
     setRating("4.8");
@@ -604,7 +611,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
                     <input
@@ -654,6 +661,32 @@ export function AdminPage({ onBack }: AdminPageProps) {
                     </datalist>
                   </div>
                   <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Sub Category</label>
+                    <input
+                      type="text"
+                      list="subcategory-suggestions"
+                      placeholder="e.g., Headphones"
+                      value={subCategory}
+                      onChange={(e) => setSubCategory(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
+                    />
+                    <datalist id="subcategory-suggestions">
+                      <option value="Headphones" />
+                      <option value="Earbuds" />
+                      <option value="Speakers" />
+                      <option value="Smartwatches" />
+                      <option value="Backpacks" />
+                      <option value="T-Shirts" />
+                      <option value="Mice & Keyboards" />
+                      <option value="Coffee & Tea" />
+                      <option value="Chocolates" />
+                      <option value="Home Decor" />
+                    </datalist>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Discount label</label>
                     <input
                       type="text"
@@ -663,9 +696,6 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Unit</label>
                     <input
@@ -676,6 +706,9 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Rating</label>
                     <input
@@ -688,6 +721,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       onChange={(e) => setRating(e.target.value)}
                       className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
                     />
+                  </div>
+                  <div>
                   </div>
                 </div>
 
@@ -848,7 +883,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         <td className="py-4.5 min-w-[200px] pr-3">
                           <p className="font-bold text-gray-900 line-clamp-1">{p.name}</p>
                           <span className="text-[10px] bg-[#F8F8F8] text-gray-500 uppercase tracking-wider font-bold px-2 py-0.5 rounded mt-1.5 inline-block border border-[#E8E8E8]">
-                            {p.category}
+                            {p.category}{p.subCategory ? ` • ${p.subCategory}` : ""}
                           </span>
                         </td>
                         <td className="py-4.5 font-semibold text-gray-900 pr-3">
