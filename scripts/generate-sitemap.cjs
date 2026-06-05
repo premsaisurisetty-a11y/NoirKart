@@ -27,6 +27,30 @@ try {
     throw new Error('Could not retrieve initialArticles array from compiled module.');
   }
   
+  // Determine the base URL for sitemap links
+  let siteUrl = 'https://noirkart.com';
+
+  if (process.env.VITE_SITE_URL) {
+    siteUrl = process.env.VITE_SITE_URL.trim();
+  } else if (process.env.VERCEL_URL) {
+    siteUrl = `https://${process.env.VERCEL_URL.trim()}`;
+  } else {
+    const envPath = path.resolve(__dirname, '../.env');
+    if (fs.existsSync(envPath)) {
+      try {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const match = envContent.match(/^VITE_SITE_URL\s*=\s*(.+)$/m);
+        if (match) {
+          siteUrl = match[1].trim();
+        }
+      } catch (e) {}
+    }
+  }
+
+  // Ensure trailing slash is removed
+  siteUrl = siteUrl.replace(/\/+$/, '');
+
+  console.log(`Using base URL: ${siteUrl}`);
   console.log(`Successfully imported ${featuredProducts.length} products and ${initialArticles.length} blog articles. Generating sitemap...`);
   
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -42,20 +66,20 @@ try {
   };
   
   // Static/Base Pages
-  appendUrl('https://noirkart.com/', 'daily', '1.0');
-  appendUrl('https://noirkart.com/?page=about', 'monthly', '0.5');
-  appendUrl('https://noirkart.com/?page=contact', 'monthly', '0.5');
-  appendUrl('https://noirkart.com/?page=privacy', 'monthly', '0.3');
-  appendUrl('https://noirkart.com/?page=terms', 'monthly', '0.3');
-  appendUrl('https://noirkart.com/?page=affiliate', 'monthly', '0.4');
-  appendUrl('https://noirkart.com/?page=blog', 'daily', '0.8');
-  appendUrl('https://noirkart.com/products', 'daily', '0.8');
-  appendUrl('https://noirkart.com/cart', 'weekly', '0.5');
+  appendUrl(`${siteUrl}/`, 'daily', '1.0');
+  appendUrl(`${siteUrl}/?page=about`, 'monthly', '0.5');
+  appendUrl(`${siteUrl}/?page=contact`, 'monthly', '0.5');
+  appendUrl(`${siteUrl}/?page=privacy`, 'monthly', '0.3');
+  appendUrl(`${siteUrl}/?page=terms`, 'monthly', '0.3');
+  appendUrl(`${siteUrl}/?page=affiliate`, 'monthly', '0.4');
+  appendUrl(`${siteUrl}/?page=blog`, 'daily', '0.8');
+  appendUrl(`${siteUrl}/products`, 'daily', '0.8');
+  appendUrl(`${siteUrl}/cart`, 'weekly', '0.5');
 
   // Dynamic Product Pages
   for (const product of featuredProducts) {
     if (product.id) {
-      appendUrl(`https://noirkart.com/?product=${product.id}`, 'weekly', '0.7');
+      appendUrl(`${siteUrl}/?product=${product.id}`, 'weekly', '0.7');
     }
   }
   
@@ -63,7 +87,7 @@ try {
   for (const article of initialArticles) {
     if (article.id) {
       // Escape the ampersand in the URL for valid XML
-      appendUrl(`https://noirkart.com/?page=blog&amp;article=${article.id}`, 'weekly', '0.6');
+      appendUrl(`${siteUrl}/?page=blog&amp;article=${article.id}`, 'weekly', '0.6');
     }
   }
   
