@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Product } from "../components/ProductCard";
 import { featuredProducts } from "../data/products";
+import { Article, initialArticles } from "../data/articles";
 import { db, isFirebaseConfigured, auth } from "../lib/firebase";
-import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 interface CartItem extends Product {
@@ -23,6 +24,12 @@ interface CartContextType {
   addProduct: (product: Omit<Product, "id">) => void;
   deleteProduct: (id: number) => void;
   updateProduct: (product: Product) => void;
+
+  // Dynamic Blog State
+  articles: Article[];
+  addArticle: (article: Omit<Article, "id">) => void;
+  deleteArticle: (id: number) => void;
+  updateArticle: (article: Article) => void;
 
   // Global Auth State
   isLoggedIn: boolean;
@@ -50,6 +57,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  // Blog Articles state (Persisted in LocalStorage & synced with Firebase if configured)
+  const [articles, setArticles] = useState<Article[]>(() => {
+    const saved = localStorage.getItem("noirkart_articles");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse local articles, seeding defaults", e);
+      }
+    }
+    localStorage.setItem("noirkart_articles", JSON.stringify(initialArticles));
+    return initialArticles;
+  });
+
   // Monitor Authentication state changes (Firebase Auth with Offline Fallback)
   useEffect(() => {
     if (isFirebaseConfigured && auth) {
@@ -59,7 +80,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const email = user.email || "";
           setActiveUserEmail(email);
           setUserName(user.displayName || (email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
-          setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+          
+          if (db) {
+            getDoc(doc(db, "admins", email.toLowerCase())).then((docSnap) => {
+              if (docSnap.exists() && docSnap.data().role === "admin") {
+                setIsAdmin(true);
+              } else {
+                setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+              }
+            }).catch((err) => {
+              console.error("Firestore admin check failed:", err);
+              setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+            });
+          } else {
+            setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+          }
         } else {
           // If there is an active local admin session in localStorage, do NOT log out!
           const session = localStorage.getItem("noirkart_active_session");
@@ -106,7 +141,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const lowercaseEmail = email.toLowerCase();
     setActiveUserEmail(lowercaseEmail);
     setUserName(name);
-    setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+    
+    if (isFirebaseConfigured && db) {
+      getDoc(doc(db, "admins", lowercaseEmail)).then((docSnap) => {
+        if (docSnap.exists() && docSnap.data().role === "admin") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+        }
+      }).catch(() => {
+        setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+      });
+    } else {
+      setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+    }
   };
 
   const logoutUser = () => {
@@ -199,6 +247,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
       };
 
       fetchProducts();
+
+      const fetchArticles = async () => {
+        try {
+          const articlesCol = collection(db, "articles");
+          const q = query(articlesCol);
+          const querySnapshot = await getDocs(q);
+          const fetchedArticles: Article[] = [];
+          
+          querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            fetchedArticles.push({
+              id: Number(data.id) || docSnap.id,
+              title: data.title,
+              excerpt: data.excerpt,
+              content: data.content || [],
+              date: data.date,
+              author: data.author,
+              productId: Number(data.productId),
+              productName: data.productName,
+              productPrice: Number(data.productPrice),
+              rating: Number(data.rating),
+              image: data.image,
+              affiliateLink: data.affiliateLink || undefined
+            });
+          });
+
+          // Sort by ID descending so newest reviews appear first
+          fetchedArticles.sort((a, b) => Number(b.id) - Number(a.id));
+          
+          setArticles(fetchedArticles);
+          localStorage.setItem("noirkart_articles", JSON.stringify(fetchedArticles));
+        } catch (error) {
+          console.error("Failed to fetch articles from Firebase Firestore:", error);
+        }
+      };
+      
+      fetchArticles();
     }
   }, []);
 
@@ -364,6 +449,132 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Add a review article (syncs with Firebase if configured)
+  const addArticle = async (newArticle: Omit<Article, "id">) => {
+    const nextId = articles.length > 0 ? Math.max(...articles.map((a) => Number(a.id) || 0)) + 1 : 1;
+    const articleWithId: Article = { ...newArticle, id: nextId };
+
+    if (isFirebaseConfigured && db) {
+      try {
+        const articlesCol = collection(db, "articles");
+        await addDoc(articlesCol, {
+          id: nextId,
+          title: newArticle.title,
+          excerpt: newArticle.excerpt,
+          content: newArticle.content,
+          date: newArticle.date,
+          author: newArticle.author,
+          productId: newArticle.productId,
+          productName: newArticle.productName,
+          productPrice: newArticle.productPrice,
+          rating: newArticle.rating,
+          image: newArticle.image,
+          affiliateLink: newArticle.affiliateLink || null
+        });
+      } catch (error: any) {
+        console.error("Failed to insert article into Firebase:", error);
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to sync with Firebase (${error.message}).\n\n` +
+          `Your review article has been successfully saved to your local browser storage instead!`
+        );
+      }
+    }
+
+    // Always update local state
+    setArticles((prev) => {
+      const updated = [articleWithId, ...prev];
+      localStorage.setItem("noirkart_articles", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Delete a review article (syncs with Firebase if configured)
+  const deleteArticle = async (id: number) => {
+    if (isFirebaseConfigured && db) {
+      try {
+        const articlesCol = collection(db, "articles");
+        const q = query(articlesCol);
+        const querySnapshot = await getDocs(q);
+        
+        let docIdToDelete = "";
+        querySnapshot.forEach((docSnap) => {
+          if (Number(docSnap.data().id) === id) {
+            docIdToDelete = docSnap.id;
+          }
+        });
+
+        if (docIdToDelete) {
+          const docRef = doc(db, "articles", docIdToDelete);
+          await deleteDoc(docRef);
+        }
+      } catch (error: any) {
+        console.error("Failed to delete article from Firebase:", error);
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to delete from Firebase (${error.message}).\n\n` +
+          `Your review article has been successfully removed from local browser storage!`
+        );
+      }
+    }
+
+    // Always update local state
+    setArticles((prev) => {
+      const updated = prev.filter((a) => a.id !== id);
+      localStorage.setItem("noirkart_articles", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Update a review article (syncs with Firebase if configured)
+  const updateArticle = async (updatedArticle: Article) => {
+    if (isFirebaseConfigured && db) {
+      try {
+        const articlesCol = collection(db, "articles");
+        const q = query(articlesCol);
+        const querySnapshot = await getDocs(q);
+        
+        let docIdToUpdate = "";
+        querySnapshot.forEach((docSnap) => {
+          if (Number(docSnap.data().id) === updatedArticle.id) {
+            docIdToUpdate = docSnap.id;
+          }
+        });
+
+        if (docIdToUpdate) {
+          const docRef = doc(db, "articles", docIdToUpdate);
+          await updateDoc(docRef, {
+            title: updatedArticle.title,
+            excerpt: updatedArticle.excerpt,
+            content: updatedArticle.content,
+            date: updatedArticle.date,
+            author: updatedArticle.author,
+            productId: updatedArticle.productId,
+            productName: updatedArticle.productName,
+            productPrice: updatedArticle.productPrice,
+            rating: updatedArticle.rating,
+            image: updatedArticle.image,
+            affiliateLink: updatedArticle.affiliateLink || null
+          });
+        }
+      } catch (error: any) {
+        console.error("Failed to update article in Firebase:", error);
+        alert(
+          `Cloud Database Offline/Busy:\n\n` +
+          `Failed to sync update with Firebase (${error.message}).\n\n` +
+          `Your changes have been successfully saved to your local browser storage instead!`
+        );
+      }
+    }
+
+    // Always update local state
+    setArticles((prev) => {
+      const updated = prev.map((a) => a.id === updatedArticle.id ? updatedArticle : a);
+      localStorage.setItem("noirkart_articles", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const cartTotal = cart.reduce(
     (total, item) => total + item.price,
     0
@@ -385,6 +596,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addProduct,
         deleteProduct,
         updateProduct,
+        articles,
+        addArticle,
+        deleteArticle,
+        updateArticle,
         isLoggedIn,
         isAdmin,
         activeUserEmail,

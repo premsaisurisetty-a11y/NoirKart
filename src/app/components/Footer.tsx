@@ -8,10 +8,32 @@ export function Footer() {
     { icon: Linkedin, label: "LinkedIn", href: "#" },
   ];
   const footerLinks = {
-    "Useful Links": ["About", "Careers", "Blog", "Press", "Guidelines"],
-    "Categories": ["Electronics", "Fashion", "Audio", "Watches", "Accessories", "Workspace"],
-    "Disclosures": ["Affiliate Disclosure", "How it Works", "Terms of Use", "FAQ"],
-    "For Brands": ["Submit a Deal", "Advertise", "Brand Partnership", "Business Enquiries"],
+    "Useful Links": [
+      { label: "About Us", href: "?page=about" },
+      { label: "Contact Us", href: "?page=contact" },
+      { label: "Careers", href: "?page=contact" },
+      { label: "Blog", href: "?page=blog" },
+    ],
+    "Categories": [
+      { label: "Electronics", href: "/#category-section-electronics" },
+      { label: "Fashion", href: "/#category-section-fashion" },
+      { label: "Audio", href: "/#category-section-audio" },
+      { label: "Watches", href: "/#category-section-watches" },
+      { label: "Accessories", href: "/#category-section-bags" },
+      { label: "Workspace", href: "/#category-section-workspace" },
+    ],
+    "Disclosures": [
+      { label: "Affiliate Disclosure", href: "?page=affiliate" },
+      { label: "Privacy Policy", href: "?page=privacy" },
+      { label: "Terms & Conditions", href: "?page=terms" },
+      { label: "FAQ", href: "?page=contact" },
+    ],
+    "For Brands": [
+      { label: "Submit a Deal", href: "?page=contact" },
+      { label: "Advertise", href: "?page=contact" },
+      { label: "Brand Partnership", href: "?page=contact" },
+      { label: "Business Enquiries", href: "?page=contact" },
+    ],
   };
 
   return (
@@ -23,7 +45,7 @@ export function Footer() {
               <img src="/Noirkart.png" alt="noirkart" className="h-10 w-auto object-contain" />
             </div>
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-              Your ultimate curated directory for premium product designs and handpicked deals. We find and verify the best merchant purchase links so you don't have to.
+              NoirKart helps users discover the best products through curated recommendations and honest reviews. We may earn commissions from qualifying purchases at no additional cost to you.
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
@@ -34,12 +56,16 @@ export function Footer() {
               ))}
             </div>
           </div>
-          {Object.entries(footerLinks).map(([category, links]) => (
+          {Object.entries(footerLinks).map(([category, items]) => (
             <div key={category}>
               <h3 className="font-bold text-gray-800 mb-3 text-sm">{category}</h3>
               <ul className="space-y-2">
-                {links.map((link) => (
-                  <li key={link}><a href="#" className="text-sm text-gray-600 hover:text-[#E23744] transition-colors cursor-pointer">{link}</a></li>
+                {items.map((item) => (
+                  <li key={item.label}>
+                    <a href={item.href} className="text-sm text-gray-600 hover:text-[#E23744] transition-colors cursor-pointer">
+                      {item.label}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -49,9 +75,9 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
             <p>© 2026 noirkart. Premium Curated Links & Showcases. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Privacy Policy</a>
-              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Terms of Service</a>
-              <a href="#" className="hover:text-[#E23744] transition-colors cursor-pointer">Cookie Policy</a>
+              <a href="?page=privacy" className="hover:text-[#E23744] transition-colors cursor-pointer">Privacy Policy</a>
+              <a href="?page=terms" className="hover:text-[#E23744] transition-colors cursor-pointer">Terms & Conditions</a>
+              <a href="?page=affiliate" className="hover:text-[#E23744] transition-colors cursor-pointer">Affiliate Disclosure</a>
             </div>
           </div>
         </div>

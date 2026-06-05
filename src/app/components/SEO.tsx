@@ -26,6 +26,12 @@ const SEO: React.FC<SEOProps> = ({
       <title>{siteTitle}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
+      {import.meta.env.VITE_PINTEREST_VERIFICATION_CODE && (
+        <meta name="p:domain_verify" content={import.meta.env.VITE_PINTEREST_VERIFICATION_CODE} />
+      )}
+      {import.meta.env.VITE_GOOGLE_SITE_VERIFICATION && (
+        <meta name="google-site-verification" content={import.meta.env.VITE_GOOGLE_SITE_VERIFICATION} />
+      )}
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />

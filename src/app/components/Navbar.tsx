@@ -49,7 +49,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     
     const lowercaseEmail = email.toLowerCase();
 
-    // Check if it's the special mock admin login
+    // Check if it's the special mock admin login bypass
     if (lowercaseEmail === "admin@noirkart.com" && password === "admin") {
       localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: "Admin Manager" }));
       loginUser(lowercaseEmail, "Admin Manager");
@@ -72,10 +72,6 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
     } else {
       const storedUsers = localStorage.getItem("noirkart_users");
       let users = storedUsers ? JSON.parse(storedUsers) : [];
-      if (!users.some((u: any) => u.email === "admin@noirkart.com")) {
-        users.push({ name: "Admin Manager", email: "admin@noirkart.com", password: "admin" });
-        localStorage.setItem("noirkart_users", JSON.stringify(users));
-      }
       const foundUser = users.find((u: any) => u.email === lowercaseEmail && u.password === password);
       if (foundUser) {
         localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: foundUser.name }));
@@ -84,7 +80,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
         triggerToast(`Welcome back, ${foundUser.name}!`);
         setEmail(""); setPassword("");
       } else {
-        alert("Invalid email or password.\n\nHint: Use admin@noirkart.com / admin to unlock the Admin Control Panel, or sign up for a new account!");
+        alert("Invalid email or password.\n\nHint: Sign up for a new account or sign in with your registered credentials!");
       }
     }
   };

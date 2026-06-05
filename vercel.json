@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/pinterest-feed.xml",
+      "destination": "/api/pinterest-feed"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
