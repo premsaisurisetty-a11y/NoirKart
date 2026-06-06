@@ -73,8 +73,8 @@ try {
   appendUrl(`${siteUrl}/?page=terms`, 'monthly', '0.3');
   appendUrl(`${siteUrl}/?page=affiliate`, 'monthly', '0.4');
   appendUrl(`${siteUrl}/?page=blog`, 'daily', '0.8');
-  appendUrl(`${siteUrl}/products`, 'daily', '0.8');
-  appendUrl(`${siteUrl}/cart`, 'weekly', '0.5');
+  // Note: homepage (/) is already included above as the root URL
+  // Cart is a transactional page - intentionally excluded from sitemap
 
   // Dynamic Product Pages
   for (const product of featuredProducts) {

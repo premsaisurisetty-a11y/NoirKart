@@ -5,4 +5,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://noirkart.com/sitemap.xml
+Sitemap: https://noir-kart.vercel.app/sitemap.xml
