@@ -1,10 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
-export const isGeminiConfigured = Boolean(GEMINI_API_KEY);
+// AI is configured if either Gemini or OpenRouter key is present
+export const isGeminiConfigured = Boolean(GEMINI_API_KEY || OPENROUTER_API_KEY);
 
-const genAI = isGeminiConfigured ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 // Valid categories that match the existing NoirKart store
 const VALID_CATEGORIES = [
@@ -86,10 +88,11 @@ async function callGeminiForProduct(
   systemPromptExtra: string = "",
   overrideBuyLink?: string
 ): Promise<GeneratedProduct> {
-  if (!genAI) {
+  if (!isGeminiConfigured) {
     throw new Error(
-      "Gemini AI is not configured. Please add your VITE_GEMINI_API_KEY to the .env file.\n" +
-      "Get a free API key at: https://aistudio.google.com/apikey"
+      "AI is not configured. Please add VITE_OPENROUTER_API_KEY or VITE_GEMINI_API_KEY to your .env file.\n" +
+      "• OpenRouter (recommended): https://openrouter.ai/keys\n" +
+      "• Gemini (free): https://aistudio.google.com/apikey"
     );
   }
 
@@ -154,8 +157,6 @@ Determine the correct category from the allowed list, generate 12-18 relevant se
     }
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
   const systemPrompt = `You are a premium e-commerce product catalog assistant for "noirkart", an Indian premium curated deals store.
 
 ${systemPromptExtra}
@@ -181,23 +182,61 @@ Example output:
 {"name":"Premium Wireless Headphones","price":2999,"originalPrice":4999,"discount":"40% OFF","category":"Audio","subCategory":"Headphones","unit":"1 piece","rating":4.8,"imageSearchTerm":"wireless headphones black","buySearchTerm":"premium wireless headphones","keywords":["headphones","audio","music"]}`;
 
   let responseText = "";
-  try {
-    // Try Gemini First
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: userMessage }
-    ]);
-    responseText = result.response.text().trim();
-  } catch (err: any) {
-    console.warn("Gemini AI failed (quota/key issue). Switching to Free AI Fallback (Pollinations)...");
+
+  // --- Priority 1: OpenRouter API (if key is configured) ---
+  if (OPENROUTER_API_KEY) {
     try {
-      // Free LLM API Fallback! No API key required.
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://noirkart.com",
+          "X-Title": "NoirKart Admin"
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage }
+          ],
+          response_format: { type: "json_object" }
+        })
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) {
+        responseText = data.choices[0].message.content.trim();
+      } else {
+        throw new Error("Empty OpenRouter response");
+      }
+    } catch (err: any) {
+      console.warn("OpenRouter failed:", err.message, "— trying next fallback...");
+    }
+  }
+
+  // --- Priority 2: Gemini Direct API (if key is configured and OpenRouter failed) ---
+  if (!responseText && genAI) {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const result = await model.generateContent([
+        { text: systemPrompt },
+        { text: userMessage }
+      ]);
+      responseText = result.response.text().trim();
+    } catch (err: any) {
+      console.warn("Gemini direct API failed:", err.message, "— trying Pollinations fallback...");
+    }
+  }
+
+  // --- Priority 3: Pollinations free fallback (no key required) ---
+  if (!responseText) {
+    try {
       const fallbackPrompt = systemPrompt + "\n\nUser Request: " + userMessage;
       const res = await fetch('https://text.pollinations.ai/prompt/' + encodeURIComponent(fallbackPrompt) + '?json=true');
       responseText = await res.text();
       responseText = responseText.trim();
     } catch (fallbackErr) {
-      throw new Error("Both Gemini and Fallback AI failed to connect. Please try again later.");
+      throw new Error("All AI providers failed. Please check your API key or try again later.");
     }
   }
 
