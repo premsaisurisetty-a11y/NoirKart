@@ -5,6 +5,10 @@
       "destination": "/api/pinterest-feed"
     },
     {
+      "source": "/api/contact",
+      "destination": "/api/contact"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

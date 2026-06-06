@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import emailjs from "@emailjs/browser";
 import { Mail, Phone, MapPin, CheckCircle2, ChevronLeft, Send, Loader2 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -9,12 +8,7 @@ export function ContactPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
   const [loading, setLoading] = useState(false);
-
-  const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || "";
-  const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
-  const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,25 +16,22 @@ export function ContactPage() {
       alert("Please fill in all fields.");
       return;
     }
-    if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
-      alert("EmailJS is not configured yet. Please add VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY to your .env file.");
-      return;
-    }
     setLoading(true);
     try {
-      await emailjs.send(
-        SERVICE_ID,
-        TEMPLATE_ID,
-        { name, email, message, title: "NoirKart Contact Form" },
-        PUBLIC_KEY
-      );
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send.");
       setSubmitted(true);
       setName("");
       setEmail("");
       setMessage("");
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
-      console.error("EmailJS error:", err);
+      console.error("Contact form error:", err);
       alert("Failed to send message. Please try again or email us directly.");
     } finally {
       setLoading(false);
