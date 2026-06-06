@@ -35,6 +35,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
 
   const {
     isLoggedIn,
+    isAdmin,
     activeUserEmail,
     userName: name,
     loginUser,
@@ -192,10 +193,10 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
                       className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-50">
                         <p className="text-xs text-gray-400">Signed in as</p>
-                        <p className="text-sm font-semibold text-gray-800 truncate text-left">{activeUserEmail === "admin@noirkart.com" ? "Admin Manager" : (name || "User")}</p>
+                        <p className="text-sm font-semibold text-gray-800 truncate text-left">{isAdmin ? "Admin Manager" : (name || "User")}</p>
                         <p className="text-xs text-gray-500 truncate text-left">{activeUserEmail || "user@noirkart.com"}</p>
                       </div>
-                      {activeUserEmail === "admin@noirkart.com" && (
+                      {isAdmin && (
                         <button onClick={() => { onAdminClick?.(); setShowDropdown(false); }}
                           className="w-full text-left px-4 py-2.5 text-sm text-[#E23744] hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer font-bold border-b border-gray-50">
                           <ShieldCheck size={16} /> Admin Control Panel ⚙️
