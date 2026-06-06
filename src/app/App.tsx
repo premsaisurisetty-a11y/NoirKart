@@ -197,6 +197,24 @@ function AppContent() {
     }
   };
 
+  const handleBlogClick = () => {
+    setCurrentPage("blog");
+    window.history.pushState(null, "", "?page=blog");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleAboutClick = () => {
+    setCurrentPage("about");
+    window.history.pushState(null, "", "?page=about");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleContactClick = () => {
+    setCurrentPage("contact");
+    window.history.pushState(null, "", "?page=contact");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar
@@ -204,6 +222,10 @@ function AppContent() {
         onCartClick={handleCartClick}
         onLogoClick={handleBackToHome}
         onAdminClick={handleAdminClick}
+        onBlogClick={handleBlogClick}
+        onAboutClick={handleAboutClick}
+        onContactClick={handleContactClick}
+        activePage={currentPage}
       />
 
       {currentPage === "home" && (

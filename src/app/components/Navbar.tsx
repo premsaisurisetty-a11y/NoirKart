@@ -18,9 +18,13 @@ interface NavbarProps {
   onCartClick?: () => void;
   onLogoClick?: () => void;
   onAdminClick?: () => void;
+  onBlogClick?: () => void;
+  onAboutClick?: () => void;
+  onContactClick?: () => void;
+  activePage?: string;
 }
 
-export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }: NavbarProps) {
+export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, onBlogClick, onAboutClick, onContactClick, activePage = "home" }: NavbarProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -226,10 +230,69 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick }
 
       </div>
 
-      <div className="bg-gradient-to-r from-[#E23744] to-[#CB202D]">
+      {/* Nav Chips Bar */}
+      <div className="bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center py-2 text-white text-xs font-semibold tracking-wide">
-            💎 Curated Premium Showcase — Handpicked Deals & Direct Purchase Links
+          <div className="flex items-center gap-2 py-2.5 overflow-x-auto scrollbar-hide">
+            {/* Noirkart — brand chip (always highlighted) */}
+            <motion.button
+              onClick={onLogoClick}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer shadow-sm ${
+                activePage === "home"
+                  ? "bg-[#E23744] text-white shadow-md shadow-red-200"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">🛒</span>
+              <span>Noirkart</span>
+            </motion.button>
+
+            {/* Blog chip */}
+            <motion.button
+              onClick={onBlogClick}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all cursor-pointer ${
+                activePage === "blog"
+                  ? "bg-[#E23744] text-white shadow-md shadow-red-200"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">📝</span>
+              <span>Blog</span>
+            </motion.button>
+
+            {/* About chip */}
+            <motion.button
+              onClick={onAboutClick}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all cursor-pointer ${
+                activePage === "about"
+                  ? "bg-[#E23744] text-white shadow-md shadow-red-200"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">✨</span>
+              <span>About</span>
+            </motion.button>
+
+            {/* Contact chip */}
+            <motion.button
+              onClick={onContactClick}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all cursor-pointer ${
+                activePage === "contact"
+                  ? "bg-[#E23744] text-white shadow-md shadow-red-200"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">📬</span>
+              <span>Contact</span>
+            </motion.button>
           </div>
         </div>
       </div>

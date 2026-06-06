@@ -627,7 +627,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const averagePrice = products.length > 0 ? (totalCatalogValue / products.length).toFixed(0) : "0";
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] pt-32 pb-16">
+    <div className="min-h-screen bg-[#F8F8F8] pt-44 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Navigation */}

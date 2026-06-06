@@ -9,7 +9,7 @@ export function PrivacyPage() {
         title="Privacy Policy"
         description="Review the Privacy Policy for NoirKart to understand how we manage cookies, analytics, and external merchant links."
       />
-      <div className="min-h-screen bg-gray-50 pt-36 pb-16">
+      <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <a href="/" className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer w-fit font-medium">
             <ChevronLeft size={20} /> Back to Curated Directory

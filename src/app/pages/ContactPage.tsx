@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Mail, Phone, MapPin, CheckCircle2, ChevronLeft } from "lucide-react";
+import emailjs from "@emailjs/browser";
+import { Mail, Phone, MapPin, CheckCircle2, ChevronLeft, Send, Loader2 } from "lucide-react";
 import SEO from "../components/SEO";
 
 export function ContactPage() {
@@ -9,17 +10,41 @@ export function ContactPage() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || "";
+  const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
+  const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) {
       alert("Please fill in all fields.");
       return;
     }
-    setSubmitted(true);
-    setName("");
-    setEmail("");
-    setMessage("");
-    setTimeout(() => setSubmitted(false), 5000);
+    if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+      alert("EmailJS is not configured yet. Please add VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY to your .env file.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        { name, email, message, title: "NoirKart Contact Form" },
+        PUBLIC_KEY
+      );
+      setSubmitted(true);
+      setName("");
+      setEmail("");
+      setMessage("");
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      console.error("EmailJS error:", err);
+      alert("Failed to send message. Please try again or email us directly.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,7 +53,7 @@ export function ContactPage() {
         title="Contact Us"
         description="Have a question or a brand proposal? Contact the NoirKart team directly."
       />
-      <div className="min-h-screen bg-gray-50 pt-36 pb-16">
+      <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <a href="/" className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer w-fit font-medium">
             <ChevronLeft size={20} /> Back to Curated Directory
@@ -53,21 +78,21 @@ export function ContactPage() {
                   <Mail className="flex-shrink-0" size={20} />
                   <div>
                     <p className="text-xs opacity-75">Support Email</p>
-                    <p className="text-sm font-semibold">support@noirkart.com</p>
+                    <p className="text-sm font-semibold">premsaisurisetty@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <Phone className="flex-shrink-0" size={20} />
                   <div>
-                    <p className="text-xs opacity-75">Phone</p>
-                    <p className="text-sm font-semibold">+91 98765 43210</p>
+                    <p className="text-xs opacity-75">Mobile</p>
+                    <p className="text-sm font-semibold">+91 83281 68976</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <MapPin className="flex-shrink-0" size={20} />
                   <div>
                     <p className="text-xs opacity-75">Office Location</p>
-                    <p className="text-sm font-semibold">Bengaluru, Karnataka, India</p>
+                    <p className="text-sm font-semibold">Hyderabad, India</p>
                   </div>
                 </div>
               </div>
@@ -126,11 +151,16 @@ export function ContactPage() {
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all"
                     />
                   </div>
-                  <button 
-                    type="submit" 
-                    className="w-full bg-[#E23744] hover:bg-[#CB202D] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer"
+                   <button 
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-[#E23744] hover:bg-[#CB202D] disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
                   >
-                    Send Message
+                    {loading ? (
+                      <><Loader2 size={16} className="animate-spin" /> Sending...</>
+                    ) : (
+                      <><Send size={16} /> Send Message</>
+                    )}
                   </button>
                 </form>
               )}

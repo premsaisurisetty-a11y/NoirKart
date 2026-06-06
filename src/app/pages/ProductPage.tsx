@@ -71,7 +71,7 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
         keywords={product.keywords?.join(", ") || `${product.category}, premium deals, noirkart`}
         image={product.image}
       />
-      <div className="min-h-screen bg-gray-50 pt-36 pb-16">
+      <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
             <ChevronLeft size={20} /> Back to Curated Directory

@@ -109,9 +109,9 @@ export function HomePage({ onProductClick }: HomePageProps) {
         description="Discover the finest premium curated deals on electronics, audio, wearables, and accessories in India. Shop with NoirKart for exclusive offers."
         keywords="premium deals, ecommerce india, electronics deals, audio equipment, wearables, noirkart"
       />
-      <div className="min-h-screen bg-gray-50 pt-32 md:pt-28">
+      <div className="min-h-screen bg-gray-50 pt-40 md:pt-36">
         {/* Zomato-Style Hero — Bold Red & White */}
-      <section className="relative bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] pt-32 pb-20 md:pt-36 md:pb-24 text-white -mt-32 md:-mt-28 mb-12 border-b border-red-200 shadow-md">
+      <section className="relative bg-gradient-to-br from-[#E23744] via-[#CB202D] to-[#a01825] pt-40 pb-20 md:pt-44 md:pb-24 text-white -mt-40 md:-mt-36 mb-12 border-b border-red-200 shadow-md">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
@@ -223,7 +223,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
           const categoryProducts = filteredProducts.filter(p => p.category === categoryName);
           if (categoryProducts.length === 0) return null;
           return (
-            <section key={categoryName} id={`category-section-${categoryName.toLowerCase()}`} className="mb-8 scroll-mt-32">
+            <section key={categoryName} id={`category-section-${categoryName.toLowerCase()}`} className="mb-8 scroll-mt-44">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">{categoryName === "Fashion" ? "Fashion & Accessories" : categoryName === "Bags" ? "Bags Under 1000" : categoryName}</h2>
                 <button className="flex items-center gap-1 text-[#E23744] font-semibold text-sm hover:gap-2 transition-all">see all <ChevronRight size={16} /></button>

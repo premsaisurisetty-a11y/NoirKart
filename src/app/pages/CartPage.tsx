@@ -24,7 +24,7 @@ export function CartPage({ onBack }: CartPageProps) {
           title="My Watchlist" 
           description="View your saved premium curated deals on NoirKart."
         />
-        <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+        <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
             <div className="bg-white rounded-2xl shadow-sm p-12 border border-gray-100">
@@ -46,7 +46,7 @@ export function CartPage({ onBack }: CartPageProps) {
         title="My Watchlist" 
         description={`View your ${cart.length} saved premium curated deals on NoirKart.`}
       />
-      <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+      <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-[#E23744] mb-6 transition-colors cursor-pointer">
             <ChevronLeft size={20} /> Back to Directory
@@ -90,7 +90,7 @@ export function CartPage({ onBack }: CartPageProps) {
           </div>
 
           <div className="lg:col-span-1">
-            <motion.div className="bg-white rounded-xl shadow-sm p-6 sticky top-32 border border-gray-100" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}>
+            <motion.div className="bg-white rounded-xl shadow-sm p-6 sticky top-44 border border-gray-100" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}>
               <h2 className="text-lg font-bold text-gray-900 mb-4">Watchlist Summary</h2>
               <div className="space-y-3 mb-6 pb-4 border-b border-gray-100">
                 <div className="flex justify-between text-sm text-gray-500"><span>Saved Deals</span><span className="font-semibold text-gray-800">{cart.length} items</span></div>
