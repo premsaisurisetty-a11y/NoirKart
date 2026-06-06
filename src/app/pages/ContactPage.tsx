@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { Mail, Phone, MapPin, CheckCircle2, ChevronLeft, Send, Loader2 } from "lucide-react";
 import SEO from "../components/SEO";
+import { validateEmail } from "../lib/sanitize";
 
 export function ContactPage() {
   const [name, setName] = useState("");
@@ -9,19 +10,41 @@ export function ContactPage() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  // Security: Honeypot field — hidden from real users, filled by bots
+  const [honeypot, setHoneypot] = useState("");
+
+  const NAME_MAX = 100;
+  const MESSAGE_MAX = 5000;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !message) {
+
+    // Client-side validation
+    if (!name.trim() || !email.trim() || !message.trim()) {
       alert("Please fill in all fields.");
       return;
     }
+    if (!validateEmail(email.trim())) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    if (name.trim().length > NAME_MAX) {
+      alert(`Name must be under ${NAME_MAX} characters.`);
+      return;
+    }
+    if (message.trim().length > MESSAGE_MAX) {
+      alert(`Message must be under ${MESSAGE_MAX} characters.`);
+      return;
+    }
+    setEmailError("");
     setLoading(true);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        // Security: Include honeypot so server can detect bots
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim(), honeypot }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send.");
@@ -30,9 +53,9 @@ export function ContactPage() {
       setEmail("");
       setMessage("");
       setTimeout(() => setSubmitted(false), 5000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Contact form error:", err);
-      alert("Failed to send message. Please try again or email us directly.");
+      alert(err.message || "Failed to send message. Please try again or email us directly.");
     } finally {
       setLoading(false);
     }
@@ -112,15 +135,29 @@ export function ContactPage() {
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Security: Honeypot field — hidden from real users via CSS, filled by bots */}
+                  <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+                    <input
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Your Name</label>
                     <input 
                       type="text" 
                       placeholder="John Doe" 
                       value={name} 
+                      maxLength={NAME_MAX}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all"
                     />
+                    <p className="text-right text-[10px] text-gray-400 mt-1">{name.length}/{NAME_MAX}</p>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email Address</label>
@@ -128,9 +165,16 @@ export function ContactPage() {
                       type="email" 
                       placeholder="you@example.com" 
                       value={email} 
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all"
+                      maxLength={254}
+                      onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                      onBlur={() => { if (email && !validateEmail(email.trim())) setEmailError("Please enter a valid email address."); }}
+                      className={`w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 text-sm transition-all ${
+                        emailError
+                          ? "border-red-300 focus:ring-red-200"
+                          : "border-gray-200 focus:ring-[#E23744]/30 focus:border-[#E23744]/40"
+                      }`}
                     />
+                    {emailError && <p className="text-red-500 text-[11px] mt-1">{emailError}</p>}
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Message Content</label>
@@ -138,13 +182,15 @@ export function ContactPage() {
                       rows={4}
                       placeholder="Write your message here..." 
                       value={message} 
+                      maxLength={MESSAGE_MAX}
                       onChange={(e) => setMessage(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all"
                     />
+                    <p className={`text-right text-[10px] mt-1 ${ message.length > MESSAGE_MAX * 0.9 ? "text-orange-500" : "text-gray-400"}`}>{message.length}/{MESSAGE_MAX}</p>
                   </div>
                    <button 
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !!emailError}
                     className="w-full bg-[#E23744] hover:bg-[#CB202D] disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
                   >
                     {loading ? (

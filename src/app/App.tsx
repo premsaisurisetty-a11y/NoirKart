@@ -101,7 +101,8 @@ function AppContent() {
     }
 
     if (pageParam) {
-      const validPages: Page[] = ["home", "product", "cart", "admin", "about", "contact", "privacy", "terms", "affiliate", "blog"];
+      // Security: 'admin' is NOT a valid deep-linkable page — admin access requires auth
+      const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog"];
       if (validPages.includes(pageParam as Page)) {
         setCurrentPage(pageParam as Page);
         setSelectedProduct(null);
@@ -127,7 +128,8 @@ function AppContent() {
       }
       
       if (pageParam) {
-        const validPages: Page[] = ["home", "product", "cart", "admin", "about", "contact", "privacy", "terms", "affiliate", "blog"];
+        // Security: 'admin' is NOT a valid deep-linkable page
+        const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog"];
         if (validPages.includes(pageParam as Page)) {
           setCurrentPage(pageParam as Page);
           setSelectedProduct(null);
@@ -238,7 +240,17 @@ function AppContent() {
 
       {currentPage === "cart" && <CartPage onBack={handleBackToHome} />}
 
-      {currentPage === "admin" && <AdminPage onBack={handleBackToHome} />}
+      {currentPage === "admin" && isAdmin && <AdminPage onBack={handleBackToHome} />}
+      {currentPage === "admin" && !isAdmin && (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8">
+            <div className="text-6xl mb-4">🔒</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">403 — Access Forbidden</h1>
+            <p className="text-gray-500 mb-6">You do not have permission to access this page.</p>
+            <button onClick={handleBackToHome} className="px-6 py-2 bg-[#E23744] text-white rounded-lg font-semibold hover:bg-[#CB202D] transition-colors cursor-pointer">Go Home</button>
+          </div>
+        </div>
+      )}
 
       {currentPage === "about" && <AboutPage />}
       {currentPage === "contact" && <ContactPage />}

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, User, Mail, Lock, X, LogOut, CheckCircle2, ChevronDown, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { hashPassword, verifyPassword } from "../lib/sanitize";
 import { useCart } from "../context/CartContext";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
 import {
@@ -51,21 +52,11 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
     e.preventDefault();
     if (!email || !password) { alert("Please fill in all fields."); return; }
     
-    const lowercaseEmail = email.toLowerCase();
-
-    // Check if it's the special mock admin login bypass
-    if (lowercaseEmail === "admin@noirkart.com" && password === "admin") {
-      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: "Admin Manager" }));
-      loginUser(lowercaseEmail, "Admin Manager");
-      setIsLoginOpen(false);
-      triggerToast("Welcome back, Admin Manager! (Admin Panel Unlocked)");
-      setEmail(""); setPassword("");
-      return;
-    }
+    const lowercaseEmail = email.toLowerCase().trim();
 
     if (isFirebaseConfigured && auth) {
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email.trim(), password);
         setIsLoginOpen(false);
         triggerToast("Logged in securely via Firebase Auth!");
         setEmail(""); setPassword("");
@@ -74,15 +65,21 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
         alert(`Authentication failed: ${err.message}`);
       }
     } else {
+      // Offline fallback: compare SHA-256 hashed password
       const storedUsers = localStorage.getItem("noirkart_users");
       let users = storedUsers ? JSON.parse(storedUsers) : [];
-      const foundUser = users.find((u: any) => u.email === lowercaseEmail && u.password === password);
+      const foundUser = users.find((u: any) => u.email === lowercaseEmail);
       if (foundUser) {
-        localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: foundUser.name }));
-        loginUser(lowercaseEmail, foundUser.name);
-        setIsLoginOpen(false);
-        triggerToast(`Welcome back, ${foundUser.name}!`);
-        setEmail(""); setPassword("");
+        const passwordMatch = await verifyPassword(password, foundUser.password);
+        if (passwordMatch) {
+          localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: foundUser.name }));
+          loginUser(lowercaseEmail, foundUser.name);
+          setIsLoginOpen(false);
+          triggerToast(`Welcome back, ${foundUser.name}!`);
+          setEmail(""); setPassword("");
+        } else {
+          alert("Invalid email or password.\n\nPlease check your credentials and try again.");
+        }
       } else {
         alert("Invalid email or password.\n\nHint: Sign up for a new account or sign in with your registered credentials!");
       }
@@ -92,28 +89,32 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signUpName || !email || !password) { alert("Please fill in all fields."); return; }
+    if (password.length < 8) { alert("Password must be at least 8 characters long."); return; }
     if (isFirebaseConfigured && auth) {
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: signUpName });
+        const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        await updateProfile(userCredential.user, { displayName: signUpName.trim() });
         setIsLoginOpen(false);
-        triggerToast(`Account created! Welcome, ${signUpName}.`);
+        triggerToast(`Account created! Welcome, ${signUpName.trim()}.`);
         setSignUpName(""); setEmail(""); setPassword("");
       } catch (err: any) {
         console.error("Firebase Sign Up Error:", err);
         alert(`Failed to create account: ${err.message}`);
       }
     } else {
-      const lowercaseEmail = email.toLowerCase();
+      // Offline fallback: hash password with SHA-256 before storing
+      const lowercaseEmail = email.toLowerCase().trim();
+      const trimmedName = signUpName.trim();
       const storedUsers = localStorage.getItem("noirkart_users");
       let users = storedUsers ? JSON.parse(storedUsers) : [];
       if (users.some((u: any) => u.email === lowercaseEmail)) { alert("An account with this email already exists."); return; }
-      users.push({ name: signUpName, email: lowercaseEmail, password });
+      const hashedPassword = await hashPassword(password);
+      users.push({ name: trimmedName, email: lowercaseEmail, password: hashedPassword });
       localStorage.setItem("noirkart_users", JSON.stringify(users));
-      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: signUpName }));
-      loginUser(lowercaseEmail, signUpName);
+      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: trimmedName }));
+      loginUser(lowercaseEmail, trimmedName);
       setIsLoginOpen(false);
-      triggerToast(`Account created! Welcome, ${signUpName}.`);
+      triggerToast(`Account created! Welcome, ${trimmedName}.`);
       setSignUpName(""); setEmail(""); setPassword("");
     }
   };

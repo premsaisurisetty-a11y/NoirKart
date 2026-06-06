@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage, isFirebaseConfigured } from "../lib/firebase";
 import { generateProductWithAI, generateProductFromAmazonLink, isAmazonUrl, isGeminiConfigured } from "../lib/gemini";
+import { sanitizeText, sanitizeUrl, validateUrl, validatePrice } from "../lib/sanitize";
 
 // Helper function to compress images before uploading to prevent cloud errors and large Base64 Firestore payloads
 const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
@@ -475,6 +476,35 @@ export function AdminPage({ onBack }: AdminPageProps) {
       return;
     }
 
+    // Security: Validate buy link is a safe http/https URL
+    if (!validateUrl(buyLink)) {
+      alert("Buy Link must be a valid URL starting with http:// or https://");
+      return;
+    }
+
+    // Security: Validate prices are positive numbers
+    if (!validatePrice(price)) {
+      alert("Price must be a positive number.");
+      return;
+    }
+    if (originalPrice && !validatePrice(originalPrice)) {
+      alert("Original Price must be a positive number.");
+      return;
+    }
+
+    // Security: Validate name length
+    if (name.trim().length > 200) {
+      alert("Product name must be under 200 characters.");
+      return;
+    }
+
+    // Security: Sanitize text fields to strip any HTML/script injection
+    const safeName = sanitizeText(name, 200);
+    const safeSubCategory = subCategory ? sanitizeText(subCategory, 100) : undefined;
+    const safeUnit = sanitizeText(unit, 50) || "1 piece";
+    const safeDiscount = discount ? sanitizeText(discount, 20) : undefined;
+    const safeBuyLink = sanitizeUrl(buyLink);
+
     // Default Images based on category if empty
     let finalImage = image;
     if (!finalImage) {
@@ -490,35 +520,35 @@ export function AdminPage({ onBack }: AdminPageProps) {
     if (editingProductId !== null) {
       updateProduct({
         id: editingProductId,
-        name,
+        name: safeName,
         price: parseFloat(price),
         originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
-        discount: discount || undefined,
+        discount: safeDiscount,
         rating: parseFloat(rating) || 4.8,
         category,
-        subCategory: subCategory || undefined,
-        unit,
+        subCategory: safeSubCategory,
+        unit: safeUnit,
         image: finalImage,
-        buyLink,
+        buyLink: safeBuyLink,
         keywords
       });
-      triggerToast(`Product "${name}" updated successfully!`);
+      triggerToast(`Product "${safeName}" updated successfully!`);
       setEditingProductId(null);
     } else {
       addProduct({
-        name,
+        name: safeName,
         price: parseFloat(price),
         originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
-        discount: discount || undefined,
+        discount: safeDiscount,
         rating: parseFloat(rating) || 4.8,
         category,
-        subCategory: subCategory || undefined,
-        unit,
+        subCategory: safeSubCategory,
+        unit: safeUnit,
         image: finalImage,
-        buyLink,
+        buyLink: safeBuyLink,
         keywords
       });
-      triggerToast(`Product "${name}" added to catalog successfully!`);
+      triggerToast(`Product "${safeName}" added to catalog successfully!`);
     }
 
     // Reset Form
