@@ -122,17 +122,26 @@ export function BlogPage() {
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-gray-100 bg-red-50/30 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-base">{selectedArticle.productName}</h3>
-                    <p className="text-xs text-gray-500 mt-1">Curated Price: <span className="text-[#E23744] font-bold text-sm">₹{selectedArticle.productPrice}</span></p>
-                  </div>
+                  {selectedArticle.productName && selectedArticle.productPrice > 0 ? (
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-base">{selectedArticle.productName}</h3>
+                      <p className="text-xs text-gray-500 mt-1">Curated Price: <span className="text-[#E23744] font-bold text-sm">₹{selectedArticle.productPrice}</span></p>
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-base">Direct Links</h3>
+                      <p className="text-xs text-gray-500 mt-1">Vetted buy links for this review</p>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2.5 w-full md:w-auto justify-end">
-                    <a 
-                      href={`/?product=${selectedArticle.productId}`}
-                      className="flex-1 md:flex-none px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
-                    >
-                      View Details
-                    </a>
+                    {selectedArticle.productId && selectedArticle.productId > 0 ? (
+                      <a 
+                        href={`/?product=${selectedArticle.productId}`}
+                        className="flex-1 md:flex-none px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
+                      >
+                        View Details
+                      </a>
+                    ) : null}
                     {selectedArticle.affiliateLinks && selectedArticle.affiliateLinks.length > 0 ? (
                       selectedArticle.affiliateLinks.map((link, idx) => (
                         <a 
@@ -146,14 +155,16 @@ export function BlogPage() {
                         </a>
                       ))
                     ) : (
-                      <a 
-                        href={selectedArticle.affiliateLink || `/?product=${selectedArticle.productId}`}
-                        target={selectedArticle.affiliateLink ? "_blank" : undefined}
-                        rel={selectedArticle.affiliateLink ? "noopener noreferrer" : undefined}
-                        className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
-                      >
-                        Buy Deal ↗
-                      </a>
+                      selectedArticle.affiliateLink ? (
+                        <a 
+                          href={selectedArticle.affiliateLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
+                        >
+                          Buy Deal ↗
+                        </a>
+                      ) : null
                     )}
                   </div>
                 </div>

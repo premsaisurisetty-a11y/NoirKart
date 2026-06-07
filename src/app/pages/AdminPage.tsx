@@ -137,7 +137,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     }
 
     const selectedProd = products.find(p => p.id === articleProductId);
-    const productName = selectedProd ? selectedProd.name : "Curated Product";
+    const productName = selectedProd ? selectedProd.name : "";
     const finalPrice = articlePrice ? parseFloat(articlePrice) : (selectedProd ? selectedProd.price : 0);
     const finalRating = articleRating ? parseFloat(articleRating) : (selectedProd ? selectedProd.rating : 4.8);
     const finalImage = articleImage || (selectedProd ? selectedProd.image : "");
@@ -197,7 +197,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setArticleTitle("");
     setArticleExcerpt("");
     setArticleContent("");
-    setArticleProductId(products.length > 0 ? products[0].id : 0);
+    setArticleProductId(0);
     setArticleAffiliateLink("");
     setArticleAffiliateLinks([]);
     setArticleImage("");
@@ -234,7 +234,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setArticleTitle("");
     setArticleExcerpt("");
     setArticleContent("");
-    setArticleProductId(products.length > 0 ? products[0].id : 0);
+    setArticleProductId(0);
     setArticleAffiliateLink("");
     setArticleAffiliateLinks([]);
     setArticleImage("");
@@ -787,9 +787,6 @@ export function AdminPage({ onBack }: AdminPageProps) {
           <button
             onClick={() => {
               setActiveTab("blog");
-              if (products.length > 0 && articleProductId === 0) {
-                handleProductSelectionChange(products[0].id);
-              }
             }}
             className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
               activeTab === "blog"
@@ -1555,19 +1552,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Associated Catalog Product <span className="text-red-400">*</span></label>
-                      <select
-                        value={articleProductId}
-                        onChange={(e) => handleProductSelectionChange(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900"
-                      >
-                        <option value={0} disabled>Select a Product...</option>
-                        {products.map(p => (
-                          <option key={p.id} value={p.id}>{p.name} (₹{p.price})</option>
-                        ))}
-                      </select>
-                    </div>
+
 
                     <div>
                       <div className="flex justify-between items-center mb-1">
