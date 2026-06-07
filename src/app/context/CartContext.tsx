@@ -246,7 +246,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
               productPrice: Number(data.productPrice),
               rating: Number(data.rating),
               image: data.image,
-              affiliateLink: data.affiliateLink || undefined
+              affiliateLink: data.affiliateLink || undefined,
+              affiliateLinks: data.affiliateLinks || []
             });
           });
 
@@ -450,7 +451,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productPrice: newArticle.productPrice,
           rating: newArticle.rating,
           image: newArticle.image,
-          affiliateLink: newArticle.affiliateLink || null
+          affiliateLink: newArticle.affiliateLink || null,
+          affiliateLinks: newArticle.affiliateLinks || []
         });
       } catch (error: any) {
         console.error("Failed to insert article into Firebase:", error);
@@ -535,7 +537,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             productPrice: updatedArticle.productPrice,
             rating: updatedArticle.rating,
             image: updatedArticle.image,
-            affiliateLink: updatedArticle.affiliateLink || null
+            affiliateLink: updatedArticle.affiliateLink || null,
+            affiliateLinks: updatedArticle.affiliateLinks || []
           });
         }
       } catch (error: any) {

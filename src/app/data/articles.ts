@@ -11,6 +11,7 @@ export interface Article {
   rating: number;
   image: string;
   affiliateLink?: string;
+  affiliateLinks?: { label: string; url: string; }[];
 }
 
 export const initialArticles: Article[] = [

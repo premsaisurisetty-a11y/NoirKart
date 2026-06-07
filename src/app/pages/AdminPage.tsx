@@ -109,6 +109,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [articleAuthor, setArticleAuthor] = useState("Admin Manager");
   const [articleProductId, setArticleProductId] = useState<number>(0);
   const [articleAffiliateLink, setArticleAffiliateLink] = useState("");
+  const [articleAffiliateLinks, setArticleAffiliateLinks] = useState<{ label: string; url: string; }[]>([]);
   const [articleImage, setArticleImage] = useState("");
   const [articlePrice, setArticlePrice] = useState("");
   const [articleRating, setArticleRating] = useState("4.8");
@@ -141,6 +142,15 @@ export function AdminPage({ onBack }: AdminPageProps) {
     const finalRating = articleRating ? parseFloat(articleRating) : (selectedProd ? selectedProd.rating : 4.8);
     const finalImage = articleImage || (selectedProd ? selectedProd.image : "");
 
+    // Clean and filter multiple affiliate links
+    const finalAffiliateLinks = articleAffiliateLinks
+      .filter(l => l.url.trim().length > 0)
+      .map(l => ({ label: l.label.trim() || "Buy Deal", url: l.url.trim() }));
+
+    const primaryAffiliateLink = finalAffiliateLinks.length > 0 
+      ? finalAffiliateLinks[0].url 
+      : (articleAffiliateLink.trim() || undefined);
+
     // Split content by paragraphs (double newlines)
     const contentParagraphs = articleContent
       .split(/\n\s*\n/)
@@ -160,7 +170,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         productPrice: finalPrice,
         rating: finalRating,
         image: finalImage,
-        affiliateLink: articleAffiliateLink || undefined
+        affiliateLink: primaryAffiliateLink,
+        affiliateLinks: finalAffiliateLinks
       });
       triggerToast(`Review article "${articleTitle}" updated successfully!`);
       setEditingArticleId(null);
@@ -176,7 +187,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         productPrice: finalPrice,
         rating: finalRating,
         image: finalImage,
-        affiliateLink: articleAffiliateLink || undefined
+        affiliateLink: primaryAffiliateLink,
+        affiliateLinks: finalAffiliateLinks
       });
       triggerToast(`Review article "${articleTitle}" published successfully!`);
     }
@@ -187,6 +199,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setArticleContent("");
     setArticleProductId(products.length > 0 ? products[0].id : 0);
     setArticleAffiliateLink("");
+    setArticleAffiliateLinks([]);
     setArticleImage("");
     setArticlePreviewUrl("");
     setArticlePrice("");
@@ -206,6 +219,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setArticleAuthor(art.author);
     setArticleProductId(art.productId);
     setArticleAffiliateLink(art.affiliateLink || "");
+    setArticleAffiliateLinks(art.affiliateLinks || (art.affiliateLink ? [{ label: "Buy Deal", url: art.affiliateLink }] : []));
     setArticleImage(art.image);
     setArticlePreviewUrl(art.image);
     setArticlePrice(art.productPrice.toString());
@@ -222,6 +236,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setArticleContent("");
     setArticleProductId(products.length > 0 ? products[0].id : 0);
     setArticleAffiliateLink("");
+    setArticleAffiliateLinks([]);
     setArticleImage("");
     setArticlePreviewUrl("");
     setArticlePrice("");
@@ -1555,15 +1570,83 @@ export function AdminPage({ onBack }: AdminPageProps) {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Affiliate Link / Buy URL <span className="text-red-400">*</span></label>
-                      <input
-                        type="url"
-                        required
-                        placeholder="e.g., https://amazon.in/dp/... (or product buy link)"
-                        value={articleAffiliateLink}
-                        onChange={(e) => setArticleAffiliateLink(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
-                      />
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-xs font-semibold text-gray-500">Affiliate / Buy Links (Max 5)</label>
+                        {articleAffiliateLinks.length < 5 && (
+                          <button
+                            type="button"
+                            onClick={() => setArticleAffiliateLinks(prev => [...prev, { label: "", url: "" }])}
+                            className="text-xs font-bold text-[#E23744] hover:text-[#CB202D] hover:underline flex items-center gap-0.5 cursor-pointer"
+                          >
+                            + Add Link
+                          </button>
+                        )}
+                      </div>
+
+                      {articleAffiliateLinks.length === 0 ? (
+                        <div>
+                          <input
+                            type="url"
+                            placeholder="Primary affiliate URL (e.g. https://amazon.in/dp/...)"
+                            value={articleAffiliateLink}
+                            onChange={(e) => {
+                              setArticleAffiliateLink(e.target.value);
+                            }}
+                            className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            Click "+ Add Link" above if you want to display multiple merchant options (up to 5 buttons).
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5 max-h-60 overflow-y-auto p-1.5 bg-gray-50/50 rounded-xl border border-gray-100">
+                          {articleAffiliateLinks.map((link, idx) => (
+                            <div key={idx} className="flex gap-2 items-center bg-white p-2 rounded-lg border border-gray-100 shadow-2xs">
+                              <input
+                                type="text"
+                                required
+                                placeholder="Label (e.g. Amazon)"
+                                value={link.label}
+                                onChange={(e) => {
+                                  const updated = [...articleAffiliateLinks];
+                                  updated[idx].label = e.target.value;
+                                  setArticleAffiliateLinks(updated);
+                                }}
+                                className="w-1/3 px-2 py-1.5 bg-[#F8F8F8] border border-[#E8E8E8] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E23744]/50 text-xs text-gray-900 font-semibold"
+                              />
+                              <input
+                                type="url"
+                                required
+                                placeholder="Affiliate URL"
+                                value={link.url}
+                                onChange={(e) => {
+                                  const updated = [...articleAffiliateLinks];
+                                  updated[idx].url = e.target.value;
+                                  setArticleAffiliateLinks(updated);
+                                  if (idx === 0) setArticleAffiliateLink(e.target.value);
+                                }}
+                                className="flex-1 px-2 py-1.5 bg-[#F8F8F8] border border-[#E8E8E8] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E23744]/50 text-xs text-gray-900"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = articleAffiliateLinks.filter((_, i) => i !== idx);
+                                  setArticleAffiliateLinks(updated);
+                                  if (updated.length > 0) {
+                                    setArticleAffiliateLink(updated[0].url);
+                                  } else {
+                                    setArticleAffiliateLink("");
+                                  }
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-500 cursor-pointer"
+                                title="Delete link"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">

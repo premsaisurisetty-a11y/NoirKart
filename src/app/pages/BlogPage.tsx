@@ -5,6 +5,45 @@ import SEO from "../components/SEO";
 import { useCart } from "../context/CartContext";
 import { Article } from "../data/articles";
 
+// Helper to parse basic markdown links: [text](url)
+const renderParagraph = (text: string) => {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts: (string | React.ReactNode)[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    const [_, linkText, linkUrl] = match;
+    const index = match.index;
+
+    // Add preceding text
+    if (index > lastIndex) {
+      parts.push(text.substring(lastIndex, index));
+    }
+
+    // Add parsed link component
+    parts.push(
+      <a
+        key={index}
+        href={linkUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#E23744] hover:underline font-bold transition-all"
+      >
+        {linkText}
+      </a>
+    );
+
+    lastIndex = linkRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? <>{parts}</> : text;
+};
+
 export function BlogPage() {
   const { articles } = useCart();
   const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
@@ -78,7 +117,7 @@ export function BlogPage() {
 
                 <div className="space-y-6 text-sm md:text-base text-gray-600 leading-relaxed text-left border-t border-gray-50 pt-6">
                   {selectedArticle.content.map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
+                    <p key={index}>{renderParagraph(paragraph)}</p>
                   ))}
                 </div>
 
@@ -87,21 +126,35 @@ export function BlogPage() {
                     <h3 className="font-bold text-gray-900 text-base">{selectedArticle.productName}</h3>
                     <p className="text-xs text-gray-500 mt-1">Curated Price: <span className="text-[#E23744] font-bold text-sm">₹{selectedArticle.productPrice}</span></p>
                   </div>
-                  <div className="flex gap-3 w-full md:w-auto">
+                  <div className="flex flex-wrap gap-2.5 w-full md:w-auto justify-end">
                     <a 
                       href={`/?product=${selectedArticle.productId}`}
                       className="flex-1 md:flex-none px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
                     >
                       View Details
                     </a>
-                    <a 
-                      href={selectedArticle.affiliateLink || `/?product=${selectedArticle.productId}`}
-                      target={selectedArticle.affiliateLink ? "_blank" : undefined}
-                      rel={selectedArticle.affiliateLink ? "noopener noreferrer" : undefined}
-                      className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
-                    >
-                      Buy Deal ↗
-                    </a>
+                    {selectedArticle.affiliateLinks && selectedArticle.affiliateLinks.length > 0 ? (
+                      selectedArticle.affiliateLinks.map((link, idx) => (
+                        <a 
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer whitespace-nowrap"
+                        >
+                          {link.label || `Buy Deal ${idx + 1}`} ↗
+                        </a>
+                      ))
+                    ) : (
+                      <a 
+                        href={selectedArticle.affiliateLink || `/?product=${selectedArticle.productId}`}
+                        target={selectedArticle.affiliateLink ? "_blank" : undefined}
+                        rel={selectedArticle.affiliateLink ? "noopener noreferrer" : undefined}
+                        className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
+                      >
+                        Buy Deal ↗
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
