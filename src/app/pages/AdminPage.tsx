@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2, Sparkles, Wand2, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2, Sparkles, Wand2, AlertCircle, Zap, ChevronDown, ChevronUp, Link as LinkIcon, FileText, CheckCheck, XCircle } from "lucide-react";
+import { useState, useCallback } from "react";
 import { useCart } from "../context/CartContext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage, isFirebaseConfigured } from "../lib/firebase";
-import { generateProductWithAI, generateProductFromAmazonLink, isAmazonUrl, isGeminiConfigured } from "../lib/gemini";
+import { generateProductWithAI, generateProductFromAmazonLink, isAmazonUrl, isGeminiConfigured, bulkGenerateProducts, BulkItem } from "../lib/gemini";
 import { sanitizeText, sanitizeUrl, validateUrl, validatePrice } from "../lib/sanitize";
 
 // Helper function to compress images before uploading to prevent cloud errors and large Base64 Firestore payloads
@@ -304,6 +304,78 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiFieldsJustFilled, setAiFieldsJustFilled] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
+
+  // ── Bulk Upload State ──────────────────────────────────────────────────────
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkItems, setBulkItems] = useState<BulkItem[]>([]);
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkDone, setBulkDone] = useState(false);
+  const [bulkSuccessCount, setBulkSuccessCount] = useState(0);
+  const [bulkFailCount, setBulkFailCount] = useState(0);
+
+  /** Parse the textarea into an array of non-empty trimmed lines */
+  const parseBulkInputs = (raw: string): string[] =>
+    raw
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+  const handleBulkUpload = useCallback(async () => {
+    const inputs = parseBulkInputs(bulkInput);
+    if (inputs.length === 0) return;
+
+    // Initialise status chips to "pending"
+    const initial: BulkItem[] = inputs.map((input, i) => ({
+      id: `bulk-${i}`,
+      input,
+      status: "pending" as const,
+    }));
+    setBulkItems(initial);
+    setBulkRunning(true);
+    setBulkDone(false);
+    setBulkSuccessCount(0);
+    setBulkFailCount(0);
+
+    try {
+      const { succeeded, failed } = await bulkGenerateProducts(
+        inputs,
+        (index, item) => {
+          // Real-time update for the status chip
+          setBulkItems((prev) => {
+            const next = [...prev];
+            next[index] = item;
+            return next;
+          });
+          // Stream-add successful products to the catalog immediately
+          if (item.status === "success" && item.product) {
+            addProduct(item.product);
+            setBulkSuccessCount((c) => c + 1);
+          } else if (item.status === "failed") {
+            setBulkFailCount((c) => c + 1);
+          }
+        },
+        3 // max 3 parallel calls
+      );
+
+      setBulkSuccessCount(succeeded.length);
+      setBulkFailCount(failed.length);
+    } catch (err: any) {
+      triggerToast(err.message || "Bulk upload failed.");
+    } finally {
+      setBulkRunning(false);
+      setBulkDone(true);
+    }
+  }, [bulkInput, addProduct]);
+
+  const handleBulkReset = () => {
+    setBulkInput("");
+    setBulkItems([]);
+    setBulkDone(false);
+    setBulkRunning(false);
+    setBulkSuccessCount(0);
+    setBulkFailCount(0);
+  };
 
   // Handle drag events
   const handleDrag = (e: React.DragEvent) => {
@@ -733,6 +805,207 @@ export function AdminPage({ onBack }: AdminPageProps) {
               <div className="lg:col-span-1">
                 <div className="bg-[#ffffff] rounded-2xl p-6 border border-[#E8E8E8]">
 
+                  {/* ⚡ Bulk AI Upload Section */}
+                  {editingProductId === null && (
+                    <div className="mb-5">
+                      {/* Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => setBulkOpen((v) => !v)}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer group"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg text-white shadow-sm group-hover:scale-110 transition-transform">
+                            <Zap size={14} />
+                          </span>
+                          <span className="text-sm font-bold text-gray-800">Bulk AI Upload</span>
+                          <span className="text-[9px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Beta</span>
+                        </span>
+                        <span className="text-gray-400 group-hover:text-indigo-500 transition-colors">
+                          {bulkOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </span>
+                      </button>
+
+                      {/* Collapsible body */}
+                      <AnimatePresence>
+                        {bulkOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.22, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-3 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/70 via-purple-50/50 to-pink-50/40 p-4 space-y-3">
+                              {/* Decorative glow */}
+                              <div className="absolute -top-6 -right-6 w-20 h-20 bg-indigo-300/20 rounded-full blur-2xl pointer-events-none" />
+
+                              <p className="text-[11px] text-gray-500 leading-relaxed">
+                                Paste <strong>Amazon URLs</strong> or <strong>product descriptions</strong> — one per line. AI generates &amp; uploads all products automatically.
+                              </p>
+
+                              {/* Textarea */}
+                              <div className="relative">
+                                <textarea
+                                  id="bulk-upload-textarea"
+                                  rows={5}
+                                  disabled={bulkRunning}
+                                  placeholder={"https://www.amazon.in/dp/B09X3ZQFJ8\nwireless earbuds with ANC under ₹2000\nhttps://www.amazon.in/dp/B0BSXWM9L8\npremium leather wallet for men"}
+                                  value={bulkInput}
+                                  onChange={(e) => setBulkInput(e.target.value)}
+                                  className="w-full px-3 py-2.5 bg-white/90 border border-indigo-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-300 text-xs text-gray-800 placeholder-gray-400 disabled:opacity-50 resize-none font-mono leading-relaxed transition-all"
+                                />
+                                {/* Line count badge */}
+                                {bulkInput.trim() && (
+                                  <span className="absolute bottom-2 right-2 text-[10px] text-indigo-500 bg-indigo-50 border border-indigo-100 rounded px-1.5 py-0.5 font-semibold">
+                                    {parseBulkInputs(bulkInput).length} item{parseBulkInputs(bulkInput).length !== 1 ? "s" : ""}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Input parse preview (type detection chips) */}
+                              {!bulkRunning && !bulkDone && bulkInput.trim() && bulkItems.length === 0 && (
+                                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                                  {parseBulkInputs(bulkInput).map((line, i) => (
+                                    <span key={i} className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium border ${
+                                      isAmazonUrl(line)
+                                        ? "bg-orange-50 border-orange-200 text-orange-700"
+                                        : "bg-blue-50 border-blue-200 text-blue-700"
+                                    }`}>
+                                      {isAmazonUrl(line) ? <LinkIcon size={9} /> : <FileText size={9} />}
+                                      {isAmazonUrl(line) ? "URL" : "Text"}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Live progress bar */}
+                              {bulkRunning && bulkItems.length > 0 && (
+                                <div className="space-y-1.5">
+                                  <div className="flex justify-between text-[10px] text-gray-500">
+                                    <span>Processing…</span>
+                                    <span>{bulkSuccessCount + bulkFailCount} / {bulkItems.length}</span>
+                                  </div>
+                                  <div className="w-full h-1.5 bg-indigo-100 rounded-full overflow-hidden">
+                                    <motion.div
+                                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                                      animate={{ width: `${((bulkSuccessCount + bulkFailCount) / bulkItems.length) * 100}%` }}
+                                      transition={{ duration: 0.3 }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Per-item status list */}
+                              {bulkItems.length > 0 && (
+                                <div className="max-h-48 overflow-y-auto space-y-1.5 pr-0.5">
+                                  <AnimatePresence initial={false}>
+                                    {bulkItems.map((item) => (
+                                      <motion.div
+                                        key={item.id}
+                                        initial={{ opacity: 0, x: -8 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.18 }}
+                                        className={`flex items-start gap-2 rounded-lg px-2.5 py-2 border text-[11px] transition-colors ${
+                                          item.status === "pending"
+                                            ? "bg-gray-50 border-gray-200 text-gray-500"
+                                            : item.status === "processing"
+                                            ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                            : item.status === "success"
+                                            ? "bg-green-50 border-green-200 text-green-800"
+                                            : "bg-red-50 border-red-200 text-red-700"
+                                        }`}
+                                      >
+                                        {/* Status icon */}
+                                        <span className="flex-shrink-0 mt-0.5">
+                                          {item.status === "pending" && <span className="text-gray-400">⏳</span>}
+                                          {item.status === "processing" && <Loader2 size={12} className="animate-spin text-indigo-500" />}
+                                          {item.status === "success" && <CheckCheck size={12} className="text-green-600" />}
+                                          {item.status === "failed" && <XCircle size={12} className="text-red-500" />}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="truncate font-medium">
+                                            {item.status === "success" && item.product ? item.product.name : item.input.slice(0, 55) + (item.input.length > 55 ? "…" : "")}
+                                          </p>
+                                          {item.status === "success" && item.product && (
+                                            <p className="text-[10px] opacity-70">₹{item.product.price.toLocaleString()} · {item.product.category}</p>
+                                          )}
+                                          {item.status === "failed" && item.error && (
+                                            <p className="text-[10px] opacity-70 truncate">{item.error}</p>
+                                          )}
+                                        </div>
+                                      </motion.div>
+                                    ))}
+                                  </AnimatePresence>
+                                </div>
+                              )}
+
+                              {/* Completion Summary Banner */}
+                              <AnimatePresence>
+                                {bulkDone && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 6 }}
+                                    className={`flex items-center gap-3 rounded-xl px-4 py-3 border text-sm font-semibold ${
+                                      bulkFailCount === 0
+                                        ? "bg-green-50 border-green-200 text-green-800"
+                                        : bulkSuccessCount === 0
+                                        ? "bg-red-50 border-red-200 text-red-800"
+                                        : "bg-amber-50 border-amber-200 text-amber-800"
+                                    }`}
+                                  >
+                                    <span className="text-xl">
+                                      {bulkFailCount === 0 ? "🎉" : bulkSuccessCount === 0 ? "💔" : "⚠️"}
+                                    </span>
+                                    <div className="flex-1">
+                                      <span className="text-green-700 font-bold">{bulkSuccessCount} uploaded</span>
+                                      {bulkFailCount > 0 && (
+                                        <span className="ml-2 text-red-600 font-bold">{bulkFailCount} failed</span>
+                                      )}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={handleBulkReset}
+                                      className="text-[11px] underline opacity-70 hover:opacity-100 cursor-pointer"
+                                    >
+                                      Reset
+                                    </button>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+
+                              {/* Action buttons */}
+                              <div className="flex gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={handleBulkUpload}
+                                  disabled={bulkRunning || parseBulkInputs(bulkInput).length === 0 || !isGeminiConfigured}
+                                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-600 text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                  {bulkRunning ? (
+                                    <><Loader2 size={13} className="animate-spin" /> Processing…</>
+                                  ) : (
+                                    <><Zap size={13} /> Generate &amp; Upload All</>
+                                  )}
+                                </button>
+                                {(bulkInput || bulkItems.length > 0) && !bulkRunning && (
+                                  <button
+                                    type="button"
+                                    onClick={handleBulkReset}
+                                    className="px-3 py-2.5 border border-gray-200 rounded-xl text-gray-500 hover:text-red-500 hover:border-red-200 transition-all cursor-pointer text-xs"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
                   {/* ✨ AI Product Generator Section */}
                   {editingProductId === null && (
                     <div className="mb-6">
@@ -742,46 +1015,68 @@ export function AdminPage({ onBack }: AdminPageProps) {
                         <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-br from-pink-300/15 to-red-300/15 rounded-full blur-2xl pointer-events-none" />
 
                         <div className="relative z-10">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="p-1.5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white shadow-sm">
-                              <Sparkles size={16} />
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className={`p-1.5 rounded-lg text-white shadow-sm transition-all ${isAmazonUrl(aiPrompt) ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-gradient-to-br from-purple-500 to-pink-500"}`}>
+                              {isAmazonUrl(aiPrompt) ? <LinkIcon size={16} /> : <Sparkles size={16} />}
                             </div>
-                            <h3 className="text-sm font-bold text-gray-800">Generate with AI</h3>
+                            <h3 className="text-sm font-bold text-gray-800">
+                              {isAmazonUrl(aiPrompt) ? "Import from Amazon Link" : "Generate with AI"}
+                            </h3>
                             {!isGeminiConfigured && (
                               <span className="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase">API Key Required</span>
                             )}
                           </div>
 
                           <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
-                            <strong>Paste an Amazon link</strong> or describe any product — AI auto-fills all fields including name, price, category, keywords & image.
+                            {isAmazonUrl(aiPrompt) ? (
+                              <>✅ <strong>Amazon link detected</strong> — AI will fetch product name, price, image &amp; all details automatically.</>
+                            ) : (
+                              <><strong>Paste an Amazon link</strong> or describe any product — AI auto-fills all fields including name, price, category, keywords &amp; image.</>
+                            )}
                           </p>
 
                           <div className="flex gap-2">
                             <input
+                              id="ai-product-input"
                               type="text"
                               placeholder='Paste Amazon link or describe: "wireless earbuds under ₹2000"'
                               value={aiPrompt}
                               onChange={(e) => { setAiPrompt(e.target.value); setAiError(null); }}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAiGenerate(); } }}
+                              onPaste={(e) => {
+                                // Auto-trigger on paste if it looks like an Amazon URL
+                                const pasted = e.clipboardData.getData("text").trim();
+                                if (isAmazonUrl(pasted)) {
+                                  // Let the state update first, then auto-generate
+                                  setTimeout(() => {
+                                    setAiPrompt(pasted);
+                                    setAiError(null);
+                                  }, 0);
+                                }
+                              }}
                               disabled={aiGenerating}
-                              className="flex-1 px-3 py-2.5 bg-white/90 border border-purple-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400/40 focus:border-purple-300 text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50 transition-all"
+                              className={`flex-1 px-3 py-2.5 bg-white/90 border rounded-xl focus:outline-none focus:ring-2 text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50 transition-all ${
+                                isAmazonUrl(aiPrompt)
+                                  ? "border-orange-300/80 focus:ring-orange-400/40 focus:border-orange-300"
+                                  : "border-purple-200/80 focus:ring-purple-400/40 focus:border-purple-300"
+                              }`}
                             />
                             <button
                               type="button"
                               onClick={handleAiGenerate}
                               disabled={aiGenerating || !aiPrompt.trim()}
-                              className="px-4 py-2.5 bg-gradient-to-r from-purple-600 via-pink-500 to-[#E23744] hover:from-purple-700 hover:via-pink-600 hover:to-[#CB202D] text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 min-w-[130px] justify-center"
+                              className={`px-4 py-2.5 text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 min-w-[130px] justify-center ${
+                                isAmazonUrl(aiPrompt)
+                                  ? "bg-gradient-to-r from-orange-500 via-red-500 to-[#E23744] hover:from-orange-600 hover:via-red-600 hover:to-[#CB202D]"
+                                  : "bg-gradient-to-r from-purple-600 via-pink-500 to-[#E23744] hover:from-purple-700 hover:via-pink-600 hover:to-[#CB202D]"
+                              }`}
                             >
                               {aiGenerating ? (
-                                <>
-                                  <Loader2 size={14} className="animate-spin" />
-                                  Generating...
-                                </>
+                                <><Loader2 size={14} className="animate-spin" />Fetching…</>
+                              ) : isAmazonUrl(aiPrompt) ? (
+                                <><UploadCloud size={14} />Import Product</>
                               ) : (
-                                <>
-                                  <Wand2 size={14} />
-                                  Generate ✨
-                                </>
+                                <><Wand2 size={14} />Generate ✨</>
                               )}
                             </button>
                           </div>

@@ -100,60 +100,127 @@ async function callGeminiForProduct(
   let amazonContext = "";
 
   if (isAmazon) {
-    try {
-      const urlMatch = userMessage.match(/Amazon Product URL: (https?:\/\/[^\s]+)/);
-      if (urlMatch && urlMatch[1]) {
-        let amazonUrl = urlMatch[1];
-        
-        // Use Codetabs free proxy to bypass CORS and fetch actual Amazon HTML
-        const res = await fetch("https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(amazonUrl));
-        const html = await res.text();
-        
-        // Extract Title
-        const titleMatch = html.match(/<title>([^<]*)</);
-        let title = titleMatch ? titleMatch[1].replace(/(:? Amazon\.in: Electronics|:? Amazon\.in|:? Buy Online)/gi, "").trim() : "Premium Amazon Product";
-        if (title.length > 100) title = title.slice(0, 100) + "...";
-        
-        // Extract Price (e.g. from <span class="a-price-whole">1,559</span>)
-        const priceMatch = html.match(/class="a-price-whole">([^<]*)</);
-        const priceStr = priceMatch ? priceMatch[1].replace(/,/g, '').replace(/\./g, '').trim() : "";
-        const price = priceStr ? Number(priceStr) : 1999;
-        
-        // Extract Original Price
-        const origMatch = html.match(/class="a-price a-text-price"[^>]*><span aria-hidden="true">[^0-9]*([0-9,]+)</);
-        const origPriceStr = origMatch ? origMatch[1].replace(/,/g, '').trim() : "";
-        const originalPrice = origPriceStr ? Number(origPriceStr) : price + Math.floor(price * 0.5);
-        
+    const urlMatch = userMessage.match(/Amazon Product URL: (https?:\/\/[^\s]+)/);
+    if (urlMatch && urlMatch[1]) {
+      const amazonUrl = urlMatch[1];
+
+      // ── Extract ASIN from URL ────────────────────────────────────────────────
+      const asinMatch = amazonUrl.match(/\/(?:dp|gp\/product|product)\/([A-Z0-9]{10})/i);
+      const asin = asinMatch ? asinMatch[1] : null;
+
+      // ── Three CORS proxies tried in order ────────────────────────────────────
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(amazonUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(amazonUrl)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(amazonUrl)}`,
+      ];
+
+      let html = "";
+      for (const proxyUrl of proxies) {
+        try {
+          const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+          if (res.ok) {
+            const text = await res.text();
+            // Sanity check: must contain amazon-specific content
+            if (text.includes("a-price") || text.includes("productTitle") || text.includes("a-size-large")) {
+              html = text;
+              break;
+            }
+          }
+        } catch {
+          // Try next proxy
+        }
+      }
+
+      if (html) {
+        // ── Parse product title ────────────────────────────────────────────────
+        let title = "Premium Amazon Product";
+        const titleEl = html.match(/id="productTitle"[^>]*>\s*([^<]{3,200})/);
+        if (titleEl) {
+          title = titleEl[1].trim();
+        } else {
+          const pageTitle = html.match(/<title>([^<]*)</);
+          if (pageTitle) {
+            title = pageTitle[1]
+              .replace(/:?\s*Amazon\.in.*$/gi, "")
+              .replace(/:?\s*Buy Online.*/gi, "")
+              .trim();
+          }
+        }
+        if (title.length > 120) title = title.slice(0, 120).trim();
+
+        // ── Parse sale price ──────────────────────────────────────────────────
+        let price = 0;
+        const priceWhole = html.match(/class="a-price-whole"\s*>([^<,\.]+)/);
+        if (priceWhole) {
+          price = Number(priceWhole[1].replace(/[^0-9]/g, "")) || 0;
+        }
+        if (!price) {
+          // Fallback: look for priceblock
+          const priceBlock = html.match(/id="priceblock_ourprice"[^>]*>[\s₹]*([0-9,]+)/);
+          if (priceBlock) price = Number(priceBlock[1].replace(/,/g, "")) || 0;
+        }
+        if (!price) price = 1999;
+
+        // ── Parse original price (MRP) ────────────────────────────────────────
+        let originalPrice = 0;
+        const origEl = html.match(/class="a-price a-text-price"[^>]*>\s*<span[^>]*>[\s₹]*([0-9,]+)/);
+        if (origEl) originalPrice = Number(origEl[1].replace(/,/g, "")) || 0;
+        if (!originalPrice || originalPrice <= price) {
+          originalPrice = Math.round(price * 1.4);
+        }
+
         const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-        
-        // Extract High-Res Image (Filter out thumbnails containing '._')
-        const imgMatches = html.match(/https:\/\/m\.media-amazon\.com\/images\/I\/[a-zA-Z0-9_\-\.]+\.jpg/g) || [];
-        const hqImages = imgMatches.filter(img => !img.includes('._') && !img.includes('SX') && !img.includes('SY'));
-        const image = hqImages.length > 0 ? hqImages[0] : "https://dummyimage.com/600x600/000/fff&text=Product+Image";
 
-        // We won't return immediately! We will save these exact scraped details
-        // and let the AI generate the proper Category, Keywords, and Rating.
+        // ── Parse high-res product image ──────────────────────────────────────
+        let image = "";
+        // Try to find the main image from the JSON data embedded in the page
+        const imgDataMatch = html.match(/"large"\s*:\s*"(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+\.jpg)"/);
+        if (imgDataMatch) {
+          image = imgDataMatch[1];
+        } else {
+          // Fallback: find full-size images (no ._SX/._SY/._AC_ sub-sizes in URL)
+          const imgMatches = html.match(/https:\/\/m\.media-amazon\.com\/images\/I\/[a-zA-Z0-9+\-_.]+\.jpg/g) || [];
+          const hqImages = imgMatches.filter(img =>
+            !img.includes("._") && !img.includes("SX") && !img.includes("SY") && !img.includes("AC_")
+          );
+          image = hqImages[0] || "";
+        }
+
         amazonContext = `
-CRITICAL: You are formatting data for an Amazon product.
-Exact Name: ${title}
-Exact Sale Price: ${price}
-Exact Original Price: ${originalPrice}
+CRITICAL — Real scraped Amazon data below. Use these EXACT values:
+Product Name: ${title}
+Sale Price (₹): ${price}
+Original MRP (₹): ${originalPrice}
+Discount: ${discountPercent}% OFF
+${asin ? `ASIN: ${asin}` : ""}
+Amazon URL: ${amazonUrl}
 
-Use these exact prices and name. Do NOT invent your own prices. 
-Determine the correct category from the allowed list, generate 12-18 relevant search keywords, and assign a realistic rating.`;
+Do NOT change the name, prices, or discount. Only generate: category, subCategory, unit, rating (4.3–5.0), imageSearchTerm, buySearchTerm, keywords.`;
 
-        // Store scraped data in global scope for this request to override the AI later
         (globalThis as any).scrapedAmazonData = {
           name: title,
-          price: price,
-          originalPrice: originalPrice,
+          price,
+          originalPrice,
           discount: `${discountPercent}% OFF`,
-          image: image,
-          buyLink: amazonUrl
+          image,
+          buyLink: amazonUrl,
         };
+      } else {
+        // ── All proxies failed — use AI knowledge directly ────────────────────
+        // Gemini 2.5 Flash has extensive training on Amazon product pages.
+        // Give it the full URL + ASIN so it can use its embedded product knowledge.
+        amazonContext = `
+The user wants to list this Amazon product on their store.
+Amazon Product URL: ${amazonUrl}
+${asin ? `ASIN: ${asin}` : ""}
+
+IMPORTANT: Use your training knowledge of this specific Amazon product to fill in ALL fields accurately:
+- Look up the exact product name, real sale price (in INR), original MRP, and discount
+- Set the buy link to the original Amazon URL: ${amazonUrl}
+- Generate a realistic product image search term for Pollinations AI
+- All prices must be realistic INR values for this product category`;
       }
-    } catch (err) {
-      console.error("Amazon direct scraping failed:", err);
     }
   }
 
@@ -335,5 +402,112 @@ Analyze the product name from the URL and generate accurate pricing, category, a
     amazonContext,
     trimmedUrl // Preserve the original Amazon link
   );
+}
+
+// ─── Bulk AI Upload ──────────────────────────────────────────────────────────
+
+export type BulkItemStatus = "pending" | "processing" | "success" | "failed";
+
+export interface BulkItem {
+  id: string;           // unique key (uuid-lite: index + input slice)
+  input: string;
+  status: BulkItemStatus;
+  product?: GeneratedProduct;
+  error?: string;
+}
+
+/**
+ * Run an array of async task factories with at most `maxConcurrent` running at once.
+ * Fires `onSettled(index, result)` immediately after each task settles so callers
+ * can update UI in real-time without waiting for the entire batch.
+ */
+async function runWithConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  maxConcurrent: number,
+  onSettled: (index: number, result: PromiseSettledResult<T>) => void
+): Promise<PromiseSettledResult<T>[]> {
+  const results: PromiseSettledResult<T>[] = new Array(tasks.length);
+  let nextIndex = 0;
+
+  async function runNext(): Promise<void> {
+    if (nextIndex >= tasks.length) return;
+    const currentIndex = nextIndex++;
+    try {
+      const value = await tasks[currentIndex]();
+      const result: PromiseFulfilledResult<T> = { status: "fulfilled", value };
+      results[currentIndex] = result;
+      onSettled(currentIndex, result);
+    } catch (reason) {
+      const result: PromiseRejectedResult = { status: "rejected", reason };
+      results[currentIndex] = result;
+      onSettled(currentIndex, result);
+    }
+    // Chain the next task from this worker slot
+    await runNext();
+  }
+
+  // Start `maxConcurrent` worker chains
+  const workers = Array.from({ length: Math.min(maxConcurrent, tasks.length) }, () => runNext());
+  await Promise.all(workers);
+  return results;
+}
+
+/**
+ * Bulk-generate products from a mixed list of Amazon URLs and text descriptions.
+ *
+ * @param inputs    Array of strings — each is either an Amazon URL or a text description
+ * @param onUpdate  Called after each item settles with the updated BulkItem
+ * @param maxConcurrent  Max parallel AI calls (default 3, to avoid rate-limiting)
+ */
+export async function bulkGenerateProducts(
+  inputs: string[],
+  onUpdate: (index: number, item: BulkItem) => void,
+  maxConcurrent = 3
+): Promise<{ succeeded: BulkItem[]; failed: BulkItem[] }> {
+  if (!isGeminiConfigured) {
+    throw new Error(
+      "AI is not configured. Please add VITE_OPENROUTER_API_KEY to your .env file."
+    );
+  }
+
+  const tasks = inputs.map((input, index) => async (): Promise<GeneratedProduct> => {
+    // Signal "processing" before the AI call
+    onUpdate(index, { id: `bulk-${index}`, input, status: "processing" });
+
+    const trimmed = input.trim();
+    if (!trimmed) throw new Error("Empty input");
+
+    return isAmazonUrl(trimmed)
+      ? generateProductFromAmazonLink(trimmed)
+      : generateProductWithAI(trimmed);
+  });
+
+  const succeeded: BulkItem[] = [];
+  const failed: BulkItem[] = [];
+
+  await runWithConcurrency(tasks, maxConcurrent, (index, result) => {
+    const input = inputs[index];
+    if (result.status === "fulfilled") {
+      const item: BulkItem = {
+        id: `bulk-${index}`,
+        input,
+        status: "success",
+        product: result.value,
+      };
+      succeeded.push(item);
+      onUpdate(index, item);
+    } else {
+      const item: BulkItem = {
+        id: `bulk-${index}`,
+        input,
+        status: "failed",
+        error: (result.reason as Error)?.message || "Unknown error",
+      };
+      failed.push(item);
+      onUpdate(index, item);
+    }
+  });
+
+  return { succeeded, failed };
 }
 
