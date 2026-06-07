@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://noir-kart.vercel.app';
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://noirkart.com';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SEOProps {
