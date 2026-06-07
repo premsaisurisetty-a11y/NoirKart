@@ -182,7 +182,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
                     {name ? name.charAt(0).toUpperCase() : "A"}
                   </div>
                   <span className="text-sm font-medium text-gray-800 hidden sm:inline">
-                    {activeUserEmail === "admin@noirkart.com" ? "Admin" : (name ? name.split(" ")[0] : "User")}
+                    {isAdmin ? "Admin" : (name ? name.split(" ")[0] : "User")}
                   </span>
                   <ChevronDown size={14} className="text-gray-500" />
                 </button>

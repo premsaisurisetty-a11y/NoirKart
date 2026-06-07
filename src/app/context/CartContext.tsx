@@ -79,39 +79,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setIsLoggedIn(true);
           const email = user.email || "";
           setActiveUserEmail(email);
-          setUserName(user.displayName || (email === "admin@noirkart.com" ? "Admin Manager" : "Premium Member"));
+          setUserName(user.displayName || "Premium Member");
           
           if (db) {
             getDoc(doc(db, "admins", email.toLowerCase())).then((docSnap) => {
-              if (docSnap.exists() && docSnap.data().role === "admin") {
-                setIsAdmin(true);
-              } else {
-                setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
-              }
+              setIsAdmin(docSnap.exists() && docSnap.data().role === "admin");
             }).catch((err) => {
               console.error("Firestore admin check failed:", err);
-              setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+              setIsAdmin(false);
             });
           } else {
-            setIsAdmin(email.toLowerCase() === "admin@noirkart.com");
+            setIsAdmin(false);
           }
         } else {
-          // If there is an active local admin session in localStorage, do NOT log out!
-          const session = localStorage.getItem("noirkart_active_session");
-          if (session) {
-            try {
-              const parsed = JSON.parse(session);
-              if (parsed.email.toLowerCase() === "admin@noirkart.com") {
-                setIsLoggedIn(true);
-                setActiveUserEmail(parsed.email);
-                setUserName(parsed.name);
-                setIsAdmin(true);
-                return;
-              }
-            } catch (e) {
-              console.error("Failed to restore local admin session", e);
-            }
-          }
           setIsLoggedIn(false);
           setActiveUserEmail("");
           setUserName("");
@@ -128,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setIsLoggedIn(true);
           setActiveUserEmail(parsed.email);
           setUserName(parsed.name);
-          setIsAdmin(parsed.email.toLowerCase() === "admin@noirkart.com");
+          setIsAdmin(false); // Admin access requires Firebase Firestore verification
         } catch (e) {
           console.error("Failed to restore local session", e);
         }
@@ -144,16 +124,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     
     if (isFirebaseConfigured && db) {
       getDoc(doc(db, "admins", lowercaseEmail)).then((docSnap) => {
-        if (docSnap.exists() && docSnap.data().role === "admin") {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(lowercaseEmail === "admin@noirkart.com");
-        }
+        setIsAdmin(docSnap.exists() && docSnap.data().role === "admin");
       }).catch(() => {
-        setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+        setIsAdmin(false);
       });
     } else {
-      setIsAdmin(lowercaseEmail === "admin@noirkart.com");
+      setIsAdmin(false); // Admin access requires Firebase Firestore verification
     }
   };
 
