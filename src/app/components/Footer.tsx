@@ -19,7 +19,7 @@ export function Footer() {
     { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/noir_kart.in/" },
     { icon: TelegramIcon, label: "Telegram", href: "https://t.me/premdealsss" },
     { icon: XIcon, label: "X", href: "https://x.com/NoirKart" },
-    { icon: Linkedin, label: "LinkedIn", href: "#" },
+    { icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/in/surisetti-prem-sai-872003382/" },
   ];
   const footerLinks = {
     "Useful Links": [
