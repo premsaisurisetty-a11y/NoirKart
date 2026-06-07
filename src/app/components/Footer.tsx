@@ -25,16 +25,7 @@ export function Footer() {
     "Useful Links": [
       { label: "About Us", href: "?page=about" },
       { label: "Contact Us", href: "?page=contact" },
-      { label: "Careers", href: "?page=contact" },
       { label: "Blog", href: "?page=blog" },
-    ],
-    "Categories": [
-      { label: "Electronics", href: "/#category-section-electronics" },
-      { label: "Fashion", href: "/#category-section-fashion" },
-      { label: "Audio", href: "/#category-section-audio" },
-      { label: "Watches", href: "/#category-section-watches" },
-      { label: "Accessories", href: "/#category-section-bags" },
-      { label: "Workspace", href: "/#category-section-workspace" },
     ],
     "Disclosures": [
       { label: "Affiliate Disclosure", href: "?page=affiliate" },
