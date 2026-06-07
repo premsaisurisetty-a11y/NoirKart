@@ -17,7 +17,7 @@ const TelegramIcon = ({ size = 18 }: { size?: number }) => (
 export function Footer() {
   const socialLinks = [
     { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/noir_kart.in/" },
-    { icon: TelegramIcon, label: "Telegram", href: "https://t.me/noirkart" },
+    { icon: TelegramIcon, label: "Telegram", href: "https://t.me/premdealsss" },
     { icon: XIcon, label: "X", href: "https://x.com/NoirKart" },
     { icon: Linkedin, label: "LinkedIn", href: "#" },
   ];
