@@ -9,7 +9,7 @@ const XIcon = ({ size = 18 }: { size?: number }) => (
 
 export function Footer() {
   const socialLinks = [
-    { icon: Instagram, label: "Instagram", href: "#" },
+    { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/noir_kart.in/" },
     { icon: Facebook, label: "Facebook", href: "#" },
     { icon: XIcon, label: "X", href: "https://x.com/NoirKart" },
     { icon: Linkedin, label: "LinkedIn", href: "#" },
