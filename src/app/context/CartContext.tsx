@@ -208,7 +208,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
               unit: data.unit,
               image: data.image,
               buyLink: data.buyLink,
-              keywords: data.keywords || []
+              keywords: data.keywords || [],
+              description: data.description || ""
             });
           });
 
@@ -312,7 +313,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           subCategory: newProduct.subCategory || null,
           unit: newProduct.unit,
           image: newProduct.image,
-          buyLink: newProduct.buyLink
+          buyLink: newProduct.buyLink,
+          keywords: newProduct.keywords || [],
+          description: newProduct.description || null
         });
       } catch (error: any) {
         console.error("Failed to insert product into Firebase:", error);
@@ -399,7 +402,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             subCategory: updatedProduct.subCategory || null,
             unit: updatedProduct.unit || null,
             image: updatedProduct.image,
-            buyLink: updatedProduct.buyLink
+            buyLink: updatedProduct.buyLink,
+            keywords: updatedProduct.keywords || [],
+            description: updatedProduct.description || null
           });
         }
       } catch (error: any) {

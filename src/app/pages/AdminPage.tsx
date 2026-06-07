@@ -93,6 +93,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [image, setImage] = useState("");
   const [buyLink, setBuyLink] = useState("");
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [description, setDescription] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Blog Form State
@@ -576,6 +577,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     const safeUnit = sanitizeText(unit, 50) || "1 piece";
     const safeDiscount = discount ? sanitizeText(discount, 20) : undefined;
     const safeBuyLink = sanitizeUrl(buyLink);
+    const safeDescription = description ? sanitizeText(description, 1000) : "";
 
     // Default Images based on category if empty
     let finalImage = image;
@@ -602,7 +604,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         unit: safeUnit,
         image: finalImage,
         buyLink: safeBuyLink,
-        keywords
+        keywords,
+        description: safeDescription
       });
       triggerToast(`Product "${safeName}" updated successfully!`);
       setEditingProductId(null);
@@ -618,7 +621,8 @@ export function AdminPage({ onBack }: AdminPageProps) {
         unit: safeUnit,
         image: finalImage,
         buyLink: safeBuyLink,
-        keywords
+        keywords,
+        description: safeDescription
       });
       triggerToast(`Product "${safeName}" added to catalog successfully!`);
     }
@@ -635,6 +639,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setPreviewUrl("");
     setBuyLink("");
     setKeywords([]);
+    setDescription("");
   };
 
   // AI Product Generation handler — supports both text prompts and Amazon URLs
@@ -663,6 +668,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       setImage(generated.image);
       setPreviewUrl(generated.image);
       setBuyLink(generated.buyLink);
+      setDescription(generated.description);
       setAiFieldsJustFilled(true);
       setTimeout(() => setAiFieldsJustFilled(false), 2000);
       triggerToast(isUrl
@@ -692,6 +698,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setImage(product.image);
     setPreviewUrl(product.image);
     setBuyLink(product.buyLink || "");
+    setDescription(product.description || "");
     
     // Smooth scroll up to the form
     window.scrollTo({ top: 180, behavior: "smooth" });
@@ -711,6 +718,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
     setImage("");
     setPreviewUrl("");
     setBuyLink("");
+    setDescription("");
   };
 
   const handleDelete = (id: number, productName: string) => {
@@ -1287,6 +1295,17 @@ export function AdminPage({ onBack }: AdminPageProps) {
                       </div>
                       <div>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Product Description & Curation Notes</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Premium product description detailing the key features, specs, and curation notes. If empty, a professional curation summary will be automatically displayed."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#F8F8F8] border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/50 text-sm text-gray-900 placeholder-gray-400"
+                      />
                     </div>
 
                     <div>

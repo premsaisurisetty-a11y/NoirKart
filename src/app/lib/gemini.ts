@@ -34,6 +34,7 @@ export interface GeneratedProduct {
   image: string;
   buyLink: string;
   keywords: string[];
+  description: string;
 }
 
 /**
@@ -243,10 +244,11 @@ RULES:
 8. "imageSearchTerm" — A 2-4 word English search term for finding a matching product photo on Unsplash. Be specific and visual.
 9. "buySearchTerm" — A search query for finding this product on Amazon India.
 10. "keywords" — An array of 12-18 relevant search keywords.
+11. "description" — A premium, detailed, engaging product description and curation notes (2-4 sentences / 40-70 words) highlighting key features, styling, specs, and aesthetics.
 
 RESPOND ONLY with a valid JSON object. No markdown, no code fences.
 Example output:
-{"name":"Premium Wireless Headphones","price":2999,"originalPrice":4999,"discount":"40% OFF","category":"Audio","subCategory":"Headphones","unit":"1 piece","rating":4.8,"imageSearchTerm":"wireless headphones black","buySearchTerm":"premium wireless headphones","keywords":["headphones","audio","music"]}`;
+{"name":"Premium Wireless Headphones","price":2999,"originalPrice":4999,"discount":"40% OFF","category":"Audio","subCategory":"Headphones","unit":"1 piece","rating":4.8,"imageSearchTerm":"wireless headphones black","buySearchTerm":"premium wireless headphones","keywords":["headphones","audio","music"],"description":"Immerse yourself in exceptional acoustic clarity with these premium wireless over-ear headphones. Featuring state-of-the-art active noise cancellation, comfortable memory-foam ear cups, and up to 40 hours of battery life, they deliver a rich, detailed sound profile suited for audiophiles and everyday listeners alike."}`;
 
   let responseText = "";
 
@@ -365,7 +367,8 @@ Example output:
     buyLink: finalBuyLink,
     keywords: Array.isArray(parsed.keywords)
       ? parsed.keywords.map((k: any) => String(k)).slice(0, 20)
-      : ["product"]
+      : ["product"],
+    description: String(parsed.description || "")
   };
 }
 

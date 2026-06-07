@@ -37,6 +37,7 @@ export function HomePage({ onProductClick }: HomePageProps) {
       product.subCategory || "",
       product.unit || "",
       product.discount || "",
+      product.description || "",
       ...(Array.isArray(product.keywords) ? product.keywords : typeof product.keywords === 'string' ? [product.keywords] : [])
     ].join(" ").toLowerCase();
 

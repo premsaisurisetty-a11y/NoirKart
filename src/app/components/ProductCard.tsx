@@ -15,6 +15,7 @@ export interface Product {
   discount?: string;
   buyLink?: string;
   keywords?: string[];
+  description?: string;
 }
 
 interface ProductCardProps {

@@ -142,8 +142,8 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
 
         <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-8 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Product Details & Curation Notes</h2>
-          <p className="text-gray-600 leading-relaxed text-sm">
-            Experience premium quality with this exceptional product. Meticulously selected by the noirkart curation team, it represents the perfect fusion of style, functionality, and outstanding user reviews.
+          <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
+            {product.description || "Experience premium quality with this exceptional product. Meticulously selected by the noirkart curation team, it represents the perfect fusion of style, functionality, and outstanding user reviews."}
           </p>
         </div>
 
