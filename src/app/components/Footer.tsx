@@ -45,7 +45,7 @@ export function Footer() {
     <footer className="bg-white border-t border-gray-200 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-8">
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
+          <div className="col-span-2 md:col-span-4 lg:col-span-2">
             <div className="mb-4">
               <img src="/Noirkart.png" alt="noirkart" className="h-10 w-auto object-contain" />
             </div>
