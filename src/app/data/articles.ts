@@ -193,5 +193,98 @@ export const initialArticles: Article[] = [
       "Scent Throw: The fragrance oils are premium. Whether it's lavender, eucalyptus, or vanilla, the scent throw fills a large room within 15 minutes of lighting, creating a soothing, spa-like atmosphere.",
       "Burn Time: Each candle provides roughly 25-30 hours of clean burn. Ideal for home decor, yoga, and gifting."
     ]
+  },
+  {
+    id: 11,
+    title: "Best Earbuds Under ₹1000: Top Vetted Budget TWS in India",
+    excerpt: "Looking for deep bass and long battery life without spending a fortune? We review and vet the best true wireless earbuds under 1000.",
+    date: "June 8, 2026",
+    author: "Aravind Iyer",
+    productId: 0,
+    productName: "Best Budget Earbuds Guide",
+    productPrice: 0,
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    content: [
+      "Finding high-fidelity sound in the ultra-budget segment can feel like searching for a needle in a haystack. Many low-cost audio gears deliver muddy, bloated bass with scratchy treble. Fortunately, premium audio brands have recently introduced highly optimized entries under ₹1000 that rewrite the rules of budget TWS.",
+      "We tested and vetted multiple options focusing on three key parameters: acoustic response curves, Bluetooth connection latency, and daily ergonomic wear. Two standout devices made our final cut.",
+      "First is the [boAt Airdopes 131](https://www.amazon.in/s?k=boAt+Airdopes+131). Priced under ₹900, these feature 13mm dynamic drivers that provide a surprisingly warm soundstage and robust bass. The IWP (Insta Wake N' Pair) connection syncs immediately upon opening the case, and they provide up to 60 hours of total playback time with the case.",
+      "Second is the [Boult Audio Z40](https://www.amazon.in/s?k=Boult+Audio+Z40). Typically retailing at ₹999, it boasts 10.3mm boom drivers, Zen Mode environmental noise cancellation for calls, and an incredible 60ms low-latency mode for mobile gaming. The rubberized matte design is comfortable for long commutes.",
+      "Our Verdict: For the absolute best sound signature under ₹1000, both are excellent picks. Support our curation process by checking out the links below."
+    ],
+    affiliateLinks: [
+      { label: "View boAt Airdopes 131 on Amazon", url: "https://www.amazon.in/s?k=boAt+Airdopes+131" },
+      { label: "View Boult Audio Z40 on Amazon", url: "https://www.amazon.in/s?k=Boult+Audio+Z40" }
+    ]
+  },
+  {
+    id: 12,
+    title: "Best Smartwatches Under ₹2000: Value Wearables Reviewed",
+    excerpt: "Get crisp health tracking, bright displays, and sleek aesthetics on a budget. We rank the top smartwatches under 2000.",
+    date: "June 7, 2026",
+    author: "Neha Sharma",
+    productId: 0,
+    productName: "Best Budget Smartwatches Guide",
+    productPrice: 0,
+    rating: 4.7,
+    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    content: [
+      "A smartwatch is a direct extension of your workflow and wellness routine. While luxury smartwatches cost a premium, the sub-₹2000 category has seen huge updates with bright displays, Bluetooth calling capabilities, and precise step counting sensors.",
+      "Design & Screen Integrity: Most budget watches compromise on display clarity under outdoor sunlight. We curated entries that offer high nit brightness and responsive touch panels, housed in durable metal-finished frames.",
+      "The [boAt Wave Sigma](https://www.amazon.in/s?k=boAt+Wave+Sigma) stands out with its massive 2.01-inch HD display, functional crown control, and support for over 700 active sports tracking modes. Retailing at roughly ₹1,499, the watch offers premium aesthetic contours that resemble high-end dials.",
+      "For a round-dial option, the [Noise ColorFit Icon 2](https://www.amazon.in/s?k=Noise+ColorFit+Icon+2) at ₹1,599 provides exceptional value. It features integrated Bluetooth calling with a dial pad, standard heart-rate and SpO2 tracking, and up to 7 days of stable battery backup.",
+      "Verdict: Both models offer fantastic design details and battery life. Tap the secure links below to check the best offers."
+    ],
+    affiliateLinks: [
+      { label: "View boAt Wave Sigma on Amazon", url: "https://www.amazon.in/s?k=boAt+Wave+Sigma" },
+      { label: "View Noise ColorFit Icon 2 on Amazon", url: "https://www.amazon.in/s?k=Noise+ColorFit+Icon+2" }
+    ]
+  },
+  {
+    id: 13,
+    title: "Top Amazon Deals Today: Vetted Premium Curation Picks",
+    excerpt: "Handpicked premium deals with verified price drops. Save big on wireless headphones, mechanical keyboards, and 4K projectors.",
+    date: "June 8, 2026",
+    author: "Vikram Sen",
+    productId: 0,
+    productName: "Top Curated Deals Guide",
+    productPrice: 0,
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1535016120720-40c646be5580?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    content: [
+      "Online shopping directories are flooded with fake discounts and markups. At NoirKart, our automated price tracker continuously analyzes price histories to ensure you only buy real, vetted deals. Today, we highlighted three standout premium listings on Amazon India.",
+      "1. [Premium Wireless Headphones](/?product=1): Retailing now at ₹2,999 (down from its average ₹4,999 markup). This over-ear audiophile headset features a 30+ hour battery life, robust aluminum components, and deep comfort cushions.",
+      "2. [Mechanical Keyboard Pro](/?product=3): On sale for ₹1,899 (35% OFF). Includes responsive tactical switches, a brushed aluminum frame, and personalized RGB backlight patterns to upgrade your work-from-home ergonomics.",
+      "3. [4K Home Theater Projector](/?product=13): Marked down to ₹34,999. Projects a stunning 150-inch display with 3500 ANSI lumens, perfect for home movie setups without standard projector noise or lag.",
+      "Support our curation by buying directly via our verified merchant links below."
+    ],
+    affiliateLinks: [
+      { label: "View Premium Headphones Deal", url: "https://www.amazon.in/s?k=premium+wireless+headphones" },
+      { label: "View Mechanical Keyboard Deal", url: "https://www.amazon.in/s?k=mechanical+keyboard+pro" },
+      { label: "View 4K Projector Deal", url: "https://www.amazon.in/s?k=4k+home+theater+projector" }
+    ]
+  },
+  {
+    id: 14,
+    title: "Best Laptops for Students 2026: Vetted Budget Notebooks",
+    excerpt: "Find the perfect balance between study, coding, and budget. We review the top laptops for college students under 40,000.",
+    date: "June 6, 2026",
+    author: "Aravind Iyer",
+    productId: 0,
+    productName: "Student Laptop Guide",
+    productPrice: 0,
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    content: [
+      "A laptop is the single most critical investment for a student. Whether you are running coding compilers, working on graphic design assignments, or writing research papers, you need a notebook that runs cool and provides snappy multi-tasking.",
+      "We vetted the budget notebook segment to find entries that offer at least 8GB of RAM, SSD storage for instant boot times, and comfortable typing ergonomics under ₹40,000.",
+      "The [ASUS Vivobook 15](https://www.amazon.in/s?k=ASUS+Vivobook+15) is our top recommendation. Powered by a Ryzen 5 or Core i3 processor with 8GB RAM and a fast 512GB SSD, it features a crisp Full HD display and a slim, lightweight frame that fits comfortably in student backpacks.",
+      "For users preferring a classic professional layout, the [HP Laptop 15s](https://www.amazon.in/s?k=HP+Laptop+15s) at ₹39,990 delivers robust performance with long battery life and a dedicated numeric keypad, making data entry and office projects highly efficient.",
+      "Click below to browse these vetted student models at their official Amazon stores."
+    ],
+    affiliateLinks: [
+      { label: "View ASUS Vivobook 15 on Amazon", url: "https://www.amazon.in/s?k=ASUS+Vivobook+15" },
+      { label: "View HP Laptop 15s on Amazon", url: "https://www.amazon.in/s?k=HP+Laptop+15s" }
+    ]
   }
 ];

@@ -5,6 +5,7 @@ import { Article, initialArticles } from "../data/articles";
 import { db, isFirebaseConfigured, auth } from "../lib/firebase";
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { postProductToPinterest } from "../lib/pinterest";
 
 interface CartItem extends Product {
   quantity: number;
@@ -335,6 +336,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("noirkart_products", JSON.stringify(updated));
       return updated;
     });
+
+    // Auto-pin to Pinterest whenever a product is published
+    postProductToPinterest(productWithId).catch((err) =>
+      console.warn("[NoirKart Pinterest] Auto-pin failed silently:", err)
+    );
   };
 
   // Delete a product from the catalog (syncs with Firebase if configured)

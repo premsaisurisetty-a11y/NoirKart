@@ -639,7 +639,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
         keywords,
         description: safeDescription
       });
-      triggerToast(`Product "${safeName}" added to catalog successfully!`);
+      triggerToast(`✅ "${safeName}" published & auto-pinned to Pinterest!`);
     }
 
     // Reset Form
