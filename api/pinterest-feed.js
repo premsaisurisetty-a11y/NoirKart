@@ -29,7 +29,8 @@ export default async function handler(req, res) {
             name: data.name,
             price: data.price,
             category: data.category || "General",
-            image: data.image || ""
+            image: data.image || "",
+            buyLink: data.buyLink || ""
           });
         }
       });
@@ -75,7 +76,7 @@ export default async function handler(req, res) {
       const description = escapeXml(
         `Buy ${product.name} at ₹${product.price}. Premium ${product.category} curated by NoirKart. Discover verified deals and official merchant links.`
       );
-      const link = escapeXml(`https://noirkart.com/?product=${product.id}`);
+      const link = escapeXml(product.buyLink || `https://noirkart.com/?product=${product.id}`);
       const imageLink = escapeXml(product.image);
       const price = `${product.price} INR`;
       

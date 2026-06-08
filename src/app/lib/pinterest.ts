@@ -37,7 +37,7 @@ const pinViaApi = async (product: Product): Promise<boolean> => {
   if (!ACCESS_TOKEN || !BOARD_ID) return false;
   if (!isPublicImageUrl(product.image)) return false;
 
-  const productUrl = `${CLEAN_SITE_URL}/?product=${product.id}`;
+  const productUrl = product.buyLink || `${CLEAN_SITE_URL}/?product=${product.id}`;
 
   try {
     const response = await fetch("https://api.pinterest.com/v5/pins", {
@@ -82,7 +82,7 @@ const pinViaApi = async (product: Product): Promise<boolean> => {
  * Works without any API keys.
  */
 export const pinViaWebDialog = (product: Product): void => {
-  const productUrl = `${CLEAN_SITE_URL}/?product=${product.id}`;
+  const productUrl = product.buyLink || `${CLEAN_SITE_URL}/?product=${product.id}`;
   const description = buildDescription(product);
   
   // Use public product image if available, else route through our dynamic image proxy API

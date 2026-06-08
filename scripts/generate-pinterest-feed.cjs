@@ -43,8 +43,8 @@ try {
     const description = escapeXml(
       `Buy ${product.name} at ₹${product.price}. Premium ${product.category} curated by NoirKart. Discover verified deals and official merchant links.`
     );
-    // Link structure: https://noirkart.com/?product=ID
-    const link = escapeXml(`https://noirkart.com/?product=${product.id}`);
+    // Link structure: product.buyLink, fallback to https://noirkart.com/?product=ID
+    const link = escapeXml(product.buyLink || `https://noirkart.com/?product=${product.id}`);
     const imageLink = escapeXml(product.image);
     const price = `${product.price} INR`;
     const availability = 'in stock';
