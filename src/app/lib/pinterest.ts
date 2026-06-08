@@ -1,6 +1,7 @@
 import { Product } from "../components/ProductCard";
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || "https://noirkart.com";
+const CLEAN_SITE_URL = SITE_URL.replace(/\/+$/, "");
 const ACCESS_TOKEN = import.meta.env.VITE_PINTEREST_ACCESS_TOKEN || "";
 const BOARD_ID = import.meta.env.VITE_PINTEREST_BOARD_ID || "";
 
@@ -36,7 +37,7 @@ const pinViaApi = async (product: Product): Promise<boolean> => {
   if (!ACCESS_TOKEN || !BOARD_ID) return false;
   if (!isPublicImageUrl(product.image)) return false;
 
-  const productUrl = `${SITE_URL}/?product=${product.id}`;
+  const productUrl = `${CLEAN_SITE_URL}/?product=${product.id}`;
 
   try {
     const response = await fetch("https://api.pinterest.com/v5/pins", {
@@ -81,13 +82,18 @@ const pinViaApi = async (product: Product): Promise<boolean> => {
  * Works without any API keys.
  */
 export const pinViaWebDialog = (product: Product): void => {
-  const productUrl = `${SITE_URL}/?product=${product.id}`;
+  const productUrl = `${CLEAN_SITE_URL}/?product=${product.id}`;
   const description = buildDescription(product);
+  
+  // Use public product image if available, else fall back to the branded og-image.png
+  const mediaUrl = isPublicImageUrl(product.image)
+    ? product.image
+    : `${CLEAN_SITE_URL}/og-image.png`;
 
   const params = new URLSearchParams({
     url: productUrl,
     description,
-    ...(isPublicImageUrl(product.image) ? { media: product.image } : {}),
+    media: mediaUrl,
   });
 
   const pinUrl = `https://www.pinterest.com/pin/create/button/?${params.toString()}`;

@@ -2,7 +2,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://noirkart.com';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
+const CLEAN_SITE_URL = SITE_URL.replace(/\/+$/, "");
+const DEFAULT_OG_IMAGE = `${CLEAN_SITE_URL}/og-image.png`;
 
 interface SEOProps {
   title: string;
@@ -18,10 +19,18 @@ const SEO: React.FC<SEOProps> = ({
   description, 
   keywords, 
   image = DEFAULT_OG_IMAGE,
-  url = SITE_URL,
+  url = CLEAN_SITE_URL,
   type = 'website'
 }) => {
   const siteTitle = `${title} | NoirKart`;
+
+  // Fallback to the default branded OG image if the image is not a public URL (e.g. if it is a local base64 data URI)
+  const isPublicUrl = (urlStr: string): boolean =>
+    urlStr.startsWith("http://") || urlStr.startsWith("https://");
+  
+  const ogImage = isPublicUrl(image) ? image : DEFAULT_OG_IMAGE;
+  const ogUrl = url.endsWith('/') ? url : `${url}/`;
+
 
   return (
     <Helmet>
@@ -38,14 +47,14 @@ const SEO: React.FC<SEOProps> = ({
       )}
 
       {/* Canonical URL */}
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={ogUrl} />
 
       {/* Open Graph / Facebook / LinkedIn / WhatsApp */}
       <meta property="og:type" content={type} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={ogUrl} />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content="NoirKart — Curated Premium Deals" />
@@ -54,10 +63,10 @@ const SEO: React.FC<SEOProps> = ({
 
       {/* Twitter */}
       <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={url} />
+      <meta property="twitter:url" content={ogUrl} />
       <meta property="twitter:title" content={siteTitle} />
       <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={image} />
+      <meta property="twitter:image" content={ogImage} />
       <meta property="twitter:image:alt" content="NoirKart — Curated Premium Deals" />
     </Helmet>
   );
