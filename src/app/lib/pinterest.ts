@@ -85,10 +85,10 @@ export const pinViaWebDialog = (product: Product): void => {
   const productUrl = `${CLEAN_SITE_URL}/?product=${product.id}`;
   const description = buildDescription(product);
   
-  // Use public product image if available, else fall back to the branded og-image.png
+  // Use public product image if available, else route through our dynamic image proxy API
   const mediaUrl = isPublicImageUrl(product.image)
     ? product.image
-    : `${CLEAN_SITE_URL}/og-image.png`;
+    : `${CLEAN_SITE_URL}/api/image?id=${product.id}`;
 
   const params = new URLSearchParams({
     url: productUrl,

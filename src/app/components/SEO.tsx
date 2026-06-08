@@ -12,6 +12,7 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
+  productId?: number;
 }
 
 const SEO: React.FC<SEOProps> = ({ 
@@ -20,7 +21,8 @@ const SEO: React.FC<SEOProps> = ({
   keywords, 
   image = DEFAULT_OG_IMAGE,
   url = CLEAN_SITE_URL,
-  type = 'website'
+  type = 'website',
+  productId
 }) => {
   const siteTitle = `${title} | NoirKart`;
 
@@ -28,7 +30,11 @@ const SEO: React.FC<SEOProps> = ({
   const isPublicUrl = (urlStr: string): boolean =>
     urlStr.startsWith("http://") || urlStr.startsWith("https://");
   
-  const ogImage = isPublicUrl(image) ? image : DEFAULT_OG_IMAGE;
+  const ogImage = isPublicUrl(image)
+    ? image
+    : productId
+    ? `${CLEAN_SITE_URL}/api/image?id=${productId}`
+    : DEFAULT_OG_IMAGE;
   const ogUrl = url.endsWith('/') ? url : `${url}/`;
 
 

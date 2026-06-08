@@ -88,6 +88,7 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
         description={`Read our detailed curation review of ${product.name}. Honest pros, cons, price history, and direct purchase referral links.`}
         keywords={product.keywords?.join(", ") || `${product.category}, premium deals, noirkart`}
         image={product.image}
+        productId={product.id}
       />
       <div className="min-h-screen bg-gray-50 pt-44 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
