@@ -3,6 +3,7 @@ import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, S
 import { useState, useCallback } from "react";
 import { useCart } from "../context/CartContext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
 import { storage, isFirebaseConfigured } from "../lib/firebase";
 import { generateProductWithAI, generateProductFromAmazonLink, isAmazonUrl, isGeminiConfigured, bulkGenerateProducts, BulkItem } from "../lib/gemini";
 import { sanitizeText, sanitizeUrl, validateUrl, validatePrice } from "../lib/sanitize";
@@ -97,7 +98,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Blog Form State
-  const [activeTab, setActiveTab] = useState<"products" | "blog">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "blog" | "analytics">("products");
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [articleTitle, setArticleTitle] = useState("");
   const [articleExcerpt, setArticleExcerpt] = useState("");
@@ -796,6 +797,18 @@ export function AdminPage({ onBack }: AdminPageProps) {
           >
             📝 Blog Review Articles
           </button>
+          <button
+            onClick={() => {
+              setActiveTab("analytics");
+            }}
+            className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === "analytics"
+                ? "border-[#E23744] text-[#E23744]"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            📊 Advanced Analytics
+          </button>
         </div>
 
         {/* Quick Stats Grid */}
@@ -819,7 +832,9 @@ export function AdminPage({ onBack }: AdminPageProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {activeTab === "products" ? (
+          {activeTab === "analytics" ? (
+            <AnalyticsDashboard />
+          ) : activeTab === "products" ? (
             <>
               {/* Add Product Form Column */}
               <div className="lg:col-span-1">

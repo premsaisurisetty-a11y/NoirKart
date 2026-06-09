@@ -7,15 +7,21 @@ import SEO from "../components/SEO";
 interface CartPageProps { onBack: () => void; }
 
 export function CartPage({ onBack }: CartPageProps) {
-  const { cart, removeFromCart, cartTotal, clearCart } = useCart();
+  const { cart, removeFromCart, cartTotal, clearCart, trackClick } = useCart();
 
   const handleOpenAll = () => {
     if (cart.length === 0) return;
     alert(`Opening ${cart.length} verified deals in new browser tabs!`);
-    cart.forEach(item => { window.open(item.buyLink || "https://www.amazon.in", "_blank", "noopener,noreferrer"); });
+    cart.forEach(item => {
+      trackClick(item.id, item.buyLink || "https://www.amazon.in", "cart");
+      window.open(item.buyLink || "https://www.amazon.in", "_blank", "noopener,noreferrer");
+    });
   };
 
-  const handleBuySingle = (url?: string) => { window.open(url || "https://www.amazon.in", "_blank", "noopener,noreferrer"); };
+  const handleBuySingle = (id: number, url?: string) => {
+    trackClick(id, url || "https://www.amazon.in", "cart");
+    window.open(url || "https://www.amazon.in", "_blank", "noopener,noreferrer");
+  };
 
   if (cart.length === 0) {
     return (
@@ -73,7 +79,7 @@ export function CartPage({ onBack }: CartPageProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
-                  <button onClick={() => handleBuySingle(item.buyLink)}
+                  <button onClick={() => handleBuySingle(item.id, item.buyLink)}
                     className="flex items-center gap-1.5 bg-[#E23744] hover:bg-[#CB202D] text-white py-2 px-4 rounded-lg font-semibold text-xs transition-colors cursor-pointer shadow-xs">
                     View Offer <ExternalLink size={14} />
                   </button>

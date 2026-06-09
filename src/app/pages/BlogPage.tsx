@@ -45,7 +45,7 @@ const renderParagraph = (text: string) => {
 };
 
 export function BlogPage() {
-  const { articles } = useCart();
+  const { articles, trackClick } = useCart();
   const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
 
   // Parse query parameter ?article=ID on load and popstate
@@ -149,6 +149,11 @@ export function BlogPage() {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => {
+                            if (selectedArticle.productId) {
+                              trackClick(selectedArticle.productId, link.url, "blog");
+                            }
+                          }}
                           className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer whitespace-nowrap"
                         >
                           {link.label || `Buy Deal ${idx + 1}`} ↗
@@ -160,6 +165,11 @@ export function BlogPage() {
                           href={selectedArticle.affiliateLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => {
+                            if (selectedArticle.productId && selectedArticle.affiliateLink) {
+                              trackClick(selectedArticle.productId, selectedArticle.affiliateLink, "blog");
+                            }
+                          }}
                           className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
                         >
                           Buy Deal ↗

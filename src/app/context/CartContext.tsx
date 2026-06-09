@@ -43,6 +43,23 @@ interface CartContextType {
   // Login Modal State
   isLoginOpen: boolean;
   setIsLoginOpen: (isOpen: boolean) => void;
+
+  // Analytics State
+  analyticsEvents: AnalyticsEvent[];
+  trackView: (productId: number) => void;
+  trackClick: (productId: number, merchantUrl: string, referrer: string) => void;
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  type: "view" | "click";
+  productId: number;
+  productName: string;
+  productPrice: number;
+  category: string;
+  timestamp: string;
+  merchantUrl?: string;
+  referrer?: string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -57,6 +74,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  // Analytics Dashboard state (Persisted in LocalStorage & synced with Firebase if configured)
+  const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>(() => {
+    const saved = localStorage.getItem("noirkart_analytics");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse local analytics events", e);
+      }
+    }
+    return [];
+  });
+
 
   // Blog Articles state (Persisted in LocalStorage & synced with Firebase if configured)
   const [articles, setArticles] = useState<Article[]>(() => {
@@ -263,6 +294,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
       };
       
       fetchArticles();
+
+      const fetchAnalytics = async () => {
+        try {
+          const eventsCol = collection(db, "analytics_events");
+          const q = query(eventsCol);
+          const querySnapshot = await getDocs(q);
+          const fetchedEvents: AnalyticsEvent[] = [];
+          
+          querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            fetchedEvents.push({
+              id: docSnap.id,
+              type: data.type,
+              productId: Number(data.productId),
+              productName: data.productName,
+              productPrice: Number(data.productPrice),
+              category: data.category,
+              timestamp: data.timestamp,
+              merchantUrl: data.merchantUrl || undefined,
+              referrer: data.referrer || undefined
+            });
+          });
+          
+          setAnalyticsEvents((prev) => {
+            const localMap = new Map(prev.map(e => [e.id, e]));
+            fetchedEvents.forEach(e => localMap.set(e.id, e));
+            const merged = Array.from(localMap.values());
+            merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            localStorage.setItem("noirkart_analytics", JSON.stringify(merged));
+            return merged;
+          });
+        } catch (error) {
+          console.error("Failed to fetch analytics events from Firebase Firestore:", error);
+        }
+      };
+
+      fetchAnalytics();
     }
   }, []);
 
@@ -565,6 +633,105 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const trackView = async (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const newEvent: AnalyticsEvent = {
+      id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: "view",
+      productId,
+      productName: product.name,
+      productPrice: product.price,
+      category: product.category,
+      timestamp: new Date().toISOString()
+    };
+
+    setAnalyticsEvents((prev) => {
+      const updated = [newEvent, ...prev].slice(0, 5000);
+      localStorage.setItem("noirkart_analytics", JSON.stringify(updated));
+      return updated;
+    });
+
+    if (isFirebaseConfigured && db) {
+      try {
+        await addDoc(collection(db, "analytics_events"), {
+          type: "view",
+          productId,
+          productName: product.name,
+          productPrice: product.price,
+          category: product.category,
+          timestamp: newEvent.timestamp
+        });
+      } catch (err) {
+        console.error("Failed to upload view event to Firebase:", err);
+      }
+    }
+  };
+
+  const trackClick = async (productId: number, merchantUrl: string, referrer: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const newEvent: AnalyticsEvent = {
+      id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: "click",
+      productId,
+      productName: product.name,
+      productPrice: product.price,
+      category: product.category,
+      timestamp: new Date().toISOString(),
+      merchantUrl,
+      referrer
+    };
+
+    setAnalyticsEvents((prev) => {
+      const updated = [newEvent, ...prev].slice(0, 5000);
+      localStorage.setItem("noirkart_analytics", JSON.stringify(updated));
+      return updated;
+    });
+
+    if (isFirebaseConfigured && db) {
+      try {
+        await addDoc(collection(db, "analytics_events"), {
+          type: "click",
+          productId,
+          productName: product.name,
+          productPrice: product.price,
+          category: product.category,
+          timestamp: newEvent.timestamp,
+          merchantUrl,
+          referrer
+        });
+      } catch (err) {
+        console.error("Failed to upload click event to Firebase:", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!localStorage.getItem("data_purged_v2")) {
+      setAnalyticsEvents([]);
+      localStorage.removeItem("noirkart_analytics");
+      if (isFirebaseConfigured && db) {
+        const clearDb = async () => {
+          try {
+            const eventsCol = collection(db, "analytics_events");
+            const querySnapshot = await getDocs(eventsCol);
+            const deletePromises = querySnapshot.docs.map((docSnap) =>
+              deleteDoc(doc(db, "analytics_events", docSnap.id))
+            );
+            await Promise.all(deletePromises);
+          } catch (e) {
+            console.error("Failed to purge Firestore events:", e);
+          }
+        };
+        clearDb();
+      }
+      localStorage.setItem("data_purged_v2", "true");
+    }
+  }, [isFirebaseConfigured]);
+
   const cartTotal = cart.reduce(
     (total, item) => total + item.price,
     0
@@ -598,6 +765,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         logoutUser,
         isLoginOpen,
         setIsLoginOpen,
+        analyticsEvents,
+        trackView,
+        trackClick,
       }}
     >
       {children}

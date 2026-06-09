@@ -16,7 +16,7 @@ interface ProductPageProps {
 }
 
 export function ProductPage({ product, onBack, onProductClick }: ProductPageProps) {
-  const { cart, addToCart, removeFromCart, products, articles } = useCart();
+  const { cart, addToCart, removeFromCart, products, articles, trackView, trackClick } = useCart();
   const isSaved = cart.some((item) => item.id === product.id);
   const { 
     dealScore, 
@@ -51,9 +51,13 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
     }
   };
   
-  const handleBuy = () => { window.open(product.buyLink || "https://www.amazon.in", "_blank", "noopener,noreferrer"); };
+  const handleBuy = () => { 
+    trackClick(product.id, product.buyLink || "https://www.amazon.in", "product_page");
+    window.open(product.buyLink || "https://www.amazon.in", "_blank", "noopener,noreferrer"); 
+  };
   
   useEffect(() => {
+    trackView(product.id);
     const globalWindow = window as any;
     if (globalWindow.pintrk) {
       globalWindow.pintrk('track', 'pagevisit', {
