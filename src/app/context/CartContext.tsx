@@ -635,15 +635,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const trackView = async (productId: number) => {
     const product = products.find(p => p.id === productId);
-    if (!product) return;
+    
+    const productName = product ? product.name : "Product Page Reference";
+    const productPrice = product ? product.price : 0;
+    const category = product ? product.category : "Directory Views";
 
     const newEvent: AnalyticsEvent = {
       id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: "view",
       productId,
-      productName: product.name,
-      productPrice: product.price,
-      category: product.category,
+      productName,
+      productPrice,
+      category,
       timestamp: new Date().toISOString()
     };
 
@@ -658,9 +661,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         await addDoc(collection(db, "analytics_events"), {
           type: "view",
           productId,
-          productName: product.name,
-          productPrice: product.price,
-          category: product.category,
+          productName,
+          productPrice,
+          category,
           timestamp: newEvent.timestamp
         });
       } catch (err) {
@@ -671,15 +674,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const trackClick = async (productId: number, merchantUrl: string, referrer: string) => {
     const product = products.find(p => p.id === productId);
-    if (!product) return;
+    
+    const productName = product ? product.name : "Vetted Deal Reference Link";
+    const productPrice = product ? product.price : 0;
+    const category = product ? product.category : "Blog Guide Links";
 
     const newEvent: AnalyticsEvent = {
       id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: "click",
       productId,
-      productName: product.name,
-      productPrice: product.price,
-      category: product.category,
+      productName,
+      productPrice,
+      category,
       timestamp: new Date().toISOString(),
       merchantUrl,
       referrer
@@ -696,9 +702,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         await addDoc(collection(db, "analytics_events"), {
           type: "click",
           productId,
-          productName: product.name,
-          productPrice: product.price,
-          category: product.category,
+          productName,
+          productPrice,
+          category,
           timestamp: newEvent.timestamp,
           merchantUrl,
           referrer

@@ -75,6 +75,48 @@ export function BlogPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Helper to parse basic markdown links: [text](url) with tracking
+  const renderParagraphWithTracking = (text: string, productId: number) => {
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: (string | React.ReactNode)[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = linkRegex.exec(text)) !== null) {
+      const [_, linkText, linkUrl] = match;
+      const index = match.index;
+
+      // Add preceding text
+      if (index > lastIndex) {
+        parts.push(text.substring(lastIndex, index));
+      }
+
+      // Add parsed link component with click tracking
+      parts.push(
+        <a
+          key={index}
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            trackClick(productId || 0, linkUrl, "blog_inline");
+          }}
+          className="text-[#E23744] hover:underline font-bold transition-all"
+        >
+          {linkText}
+        </a>
+      );
+
+      lastIndex = linkRegex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? <>{parts}</> : text;
+  };
+
   const selectedArticle = articles.find((a) => a.id === selectedArticleId);
 
   return (
@@ -100,27 +142,27 @@ export function BlogPage() {
                 >
                   <ChevronLeft size={18} /> Back to Product Reviews
                 </button>
-
+ 
                 <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100 mb-6 border border-gray-100">
                   <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full h-full object-cover" />
                 </div>
-
+ 
                 <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 mb-4 font-semibold uppercase tracking-wider">
                   <span className="flex items-center gap-1"><Calendar size={14} /> {selectedArticle.date}</span>
                   <span className="flex items-center gap-1"><User size={14} /> By {selectedArticle.author}</span>
                   <span className="text-[#E23744]">★ Vetted Review ({selectedArticle.rating}/5)</span>
                 </div>
-
+ 
                 <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
                   {selectedArticle.title}
                 </h1>
-
+ 
                 <div className="space-y-6 text-sm md:text-base text-gray-600 leading-relaxed text-left border-t border-gray-50 pt-6">
                   {selectedArticle.content.map((paragraph, index) => (
-                    <p key={index}>{renderParagraph(paragraph)}</p>
+                    <p key={index}>{renderParagraphWithTracking(paragraph, selectedArticle.productId)}</p>
                   ))}
                 </div>
-
+ 
                 <div className="mt-8 pt-8 border-t border-gray-100 bg-red-50/30 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                   {selectedArticle.productName && selectedArticle.productPrice > 0 ? (
                     <div>
@@ -150,9 +192,7 @@ export function BlogPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => {
-                            if (selectedArticle.productId) {
-                              trackClick(selectedArticle.productId, link.url, "blog");
-                            }
+                            trackClick(selectedArticle.productId || 0, link.url, "blog");
                           }}
                           className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer whitespace-nowrap"
                         >
@@ -166,8 +206,8 @@ export function BlogPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => {
-                            if (selectedArticle.productId && selectedArticle.affiliateLink) {
-                              trackClick(selectedArticle.productId, selectedArticle.affiliateLink, "blog");
+                            if (selectedArticle.affiliateLink) {
+                              trackClick(selectedArticle.productId || 0, selectedArticle.affiliateLink, "blog");
                             }
                           }}
                           className="flex-1 md:flex-none px-5 py-2.5 bg-[#E23744] hover:bg-[#CB202D] text-white text-xs font-bold rounded-lg text-center transition-colors cursor-pointer"
