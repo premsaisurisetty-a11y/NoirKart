@@ -15,6 +15,7 @@ interface HomePageProps {
 export function HomePage({ onProductClick }: HomePageProps) {
   const { products, articles } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const matchesSearch = (product: Product, query: string): boolean => {
     if (!query.trim()) return true;
@@ -165,47 +166,68 @@ export function HomePage({ onProductClick }: HomePageProps) {
                 <Search className="text-gray-400 flex-shrink-0" size={22} />
                 <input type="text" placeholder="Search headphones, keyboards, watches, fashion..."
                   className="w-full focus:outline-none text-sm bg-transparent placeholder-gray-400 text-gray-800"
-                  value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setShowSuggestions(false);
+                    }
+                  }}
+                />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-600 cursor-pointer flex-shrink-0">
+                  <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} className="text-gray-400 hover:text-gray-600 cursor-pointer flex-shrink-0">
                     <X size={18} />
                   </button>
                 )}
               </div>
 
-              {searchQuery && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 max-h-96 overflow-y-auto">
-                  {filteredProducts.length > 0 ? (
-                    <div className="py-2">
-                      <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
-                        Suggestions
-                      </div>
-                      {filteredProducts.slice(0, 6).map((p) => (
-                        <div key={p.id} onClick={() => onProductClick(p)} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors group">
-                          <div className="w-12 h-12 bg-white border border-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 p-1 group-hover:border-gray-200">
-                            <img src={p.image} alt={p.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
-                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">{p.category} • <span className="text-[#E23744]">₹{p.price}</span></p>
-                          </div>
-                          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#E23744]" />
+              {searchQuery && showSuggestions && (
+                <>
+                  <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowSuggestions(false)} />
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 max-h-96 overflow-y-auto">
+                    {filteredProducts.length > 0 ? (
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
+                          Suggestions
                         </div>
-                      ))}
-                      {filteredProducts.length > 6 && (
-                         <div className="px-4 py-3 text-center text-xs font-bold text-[#E23744] bg-red-50/30 hover:bg-red-50 cursor-pointer transition-colors"
-                              onClick={() => { const el = document.getElementById('category-section-' + filteredProducts[0].category.toLowerCase()); if(el) el.scrollIntoView({behavior: 'smooth'}); }}>
-                           View all {filteredProducts.length} matching products 👇
-                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="px-4 py-8 text-center text-gray-500 text-sm flex flex-col items-center">
-                      <span className="text-3xl mb-2">🔍</span>
-                      No matching items found for "{searchQuery}"
-                    </div>
-                  )}
-                </div>
+                        {filteredProducts.slice(0, 6).map((p) => (
+                          <div key={p.id} onClick={() => {
+                            setShowSuggestions(false);
+                            onProductClick(p);
+                          }} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors group">
+                            <div className="w-12 h-12 bg-white border border-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 p-1 group-hover:border-gray-200">
+                              <img src={p.image} alt={p.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
+                              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">{p.category} • <span className="text-[#E23744]">₹{p.price}</span></p>
+                            </div>
+                            <ChevronRight size={16} className="text-gray-300 group-hover:text-[#E23744]" />
+                          </div>
+                        ))}
+                        {filteredProducts.length > 6 && (
+                           <div className="px-4 py-3 text-center text-xs font-bold text-[#E23744] bg-red-50/30 hover:bg-red-50 cursor-pointer transition-colors relative z-50"
+                                onClick={() => {
+                                  setShowSuggestions(false);
+                                  const el = document.getElementById('category-section-' + filteredProducts[0].category.toLowerCase());
+                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                }}>
+                             View all {filteredProducts.length} matching products 👇
+                           </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="px-4 py-8 text-center text-gray-500 text-sm flex flex-col items-center">
+                        <span className="text-3xl mb-2">🔍</span>
+                        No matching items found for "{searchQuery}"
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </motion.div>
           </div>
