@@ -16,7 +16,7 @@ interface ProductPageProps {
 }
 
 export function ProductPage({ product, onBack, onProductClick }: ProductPageProps) {
-  const { cart, addToCart, removeFromCart, products, articles, trackView, trackClick } = useCart();
+  const { cart, addToCart, removeFromCart, products, articles, trackView, trackClick, isAdmin } = useCart();
   const isSaved = cart.some((item) => item.id === product.id);
   const { 
     dealScore, 
@@ -152,13 +152,15 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
                   <Button variant="primary" size="lg" className="flex-1 flex items-center justify-center gap-2 font-bold cursor-pointer" onClick={handleBuy}>
                     Buy Vetted Deal ↗
                   </Button>
-                  <button onClick={shareToPinterest}
-                    className="p-3.5 rounded-xl border border-gray-200 text-gray-500 hover:text-[#BD081C] hover:bg-red-50 hover:border-red-100 transition-all cursor-pointer"
-                    title="Pin to Pinterest">
-                    <svg viewBox="0 0 24 24" className="w-[22px] h-[22px]" fill="currentColor">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.16 9.4 7.63 11.16-.1-.95-.2-2.4.04-3.43.22-.93 1.4-5.93 1.4-5.93s-.36-.72-.36-1.77c0-1.66.96-2.9 2.17-2.9 1.02 0 1.52.77 1.52 1.68 0 1.03-.65 2.57-.99 4c-.28 1.19.6 2.16 1.77 2.16 2.12 0 3.76-2.24 3.76-5.47 0-2.86-2.06-4.86-5-4.86-3.4 0-5.4 2.56-5.4 5.2 0 1.03.4 2.14.9 2.74.1.12.1.23.08.34l-.34 1.4c-.06.24-.18.28-.4.18-1.5-.7-2.43-2.9-2.43-4.66 0-3.8 2.76-7.3 7.97-7.3 4.18 0 7.43 2.98 7.43 6.96 0 4.16-2.62 7.5-6.26 7.5-1.22 0-2.37-.63-2.76-1.38l-.75 2.87c-.27 1.04-1.02 2.34-1.5 3.13C10.74 23.83 11.36 24 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/>
-                    </svg>
-                  </button>
+                  {isAdmin && (
+                    <button onClick={shareToPinterest}
+                      className="p-3.5 rounded-xl border border-gray-200 text-gray-500 hover:text-[#BD081C] hover:bg-red-50 hover:border-red-100 transition-all cursor-pointer"
+                      title="Pin to Pinterest">
+                      <svg viewBox="0 0 24 24" className="w-[22px] h-[22px]" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.16 9.4 7.63 11.16-.1-.95-.2-2.4.04-3.43.22-.93 1.4-5.93 1.4-5.93s-.36-.72-.36-1.77c0-1.66.96-2.9 2.17-2.9 1.02 0 1.52.77 1.52 1.68 0 1.03-.65 2.57-.99 4c-.28 1.19.6 2.16 1.77 2.16 2.12 0 3.76-2.24 3.76-5.47 0-2.86-2.06-4.86-5-4.86-3.4 0-5.4 2.56-5.4 5.2 0 1.03.4 2.14.9 2.74.1.12.1.23.08.34l-.34 1.4c-.06.24-.18.28-.4.18-1.5-.7-2.43-2.9-2.43-4.66 0-3.8 2.76-7.3 7.97-7.3 4.18 0 7.43 2.98 7.43 6.96 0 4.16-2.62 7.5-6.26 7.5-1.22 0-2.37-.63-2.76-1.38l-.75 2.87c-.27 1.04-1.02 2.34-1.5 3.13C10.74 23.83 11.36 24 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/>
+                      </svg>
+                    </button>
+                  )}
                   <button onClick={handleSave}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer ${isSaved ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
                     title={isSaved ? "Remove from Watchlist" : "Save to Watchlist"}>
