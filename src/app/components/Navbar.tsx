@@ -46,7 +46,8 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
     isLoginOpen,
     setIsLoginOpen,
     sendOtp,
-    verifyOtpAndLogin
+    verifyOtpAndLogin,
+    coinsProfile
   } = useCart();
 
   const triggerToast = (msg: string) => {
@@ -139,6 +140,21 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
 
 
           <div className="flex items-center gap-4">
+            {isLoggedIn && (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={onCoinsClick}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200 shadow-2xs cursor-pointer transition-all"
+                title="My NoirCoins Balance"
+              >
+                <span className="text-base animate-pulse">🪙</span>
+                <span className="text-xs font-extrabold text-amber-800 tracking-wide font-mono">
+                  {coinsProfile ? coinsProfile.coinsBalance.toLocaleString() : "0"}
+                </span>
+              </motion.button>
+            )}
+
             {!isLoggedIn ? (
               <button onClick={() => { setIsSignUp(false); setIsLoginOpen(true); }}
                 className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
