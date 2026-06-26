@@ -11,10 +11,11 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { AffiliatePage } from "./pages/AffiliatePage";
 import { BlogPage } from "./pages/BlogPage";
+import { NoirCoinsPage } from "./pages/NoirCoinsPage";
 import { CartProvider, useCart } from "./context/CartContext";
 import { Product } from "./components/ProductCard";
 
-type Page = "home" | "product" | "cart" | "admin" | "about" | "contact" | "privacy" | "terms" | "affiliate" | "blog";
+type Page = "home" | "product" | "cart" | "admin" | "about" | "contact" | "privacy" | "terms" | "affiliate" | "blog" | "noircoins";
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -89,6 +90,12 @@ function AppContent() {
     const params = new URLSearchParams(window.location.search);
     const productIdStr = params.get("product");
     const pageParam = params.get("page");
+    const refParam = params.get("ref");
+    
+    if (refParam) {
+      sessionStorage.setItem("noirkart_pending_referral", refParam);
+      console.log("[NoirKart Referrals] Saved pending referral code:", refParam);
+    }
     
     if (productIdStr && products.length > 0) {
       const productId = Number(productIdStr);
@@ -102,7 +109,7 @@ function AppContent() {
 
     if (pageParam) {
       // Security: 'admin' is NOT a valid deep-linkable page — admin access requires auth
-      const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog"];
+      const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog", "noircoins"];
       if (validPages.includes(pageParam as Page)) {
         setCurrentPage(pageParam as Page);
         setSelectedProduct(null);
@@ -129,7 +136,7 @@ function AppContent() {
       
       if (pageParam) {
         // Security: 'admin' is NOT a valid deep-linkable page
-        const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog"];
+        const validPages: Page[] = ["home", "product", "cart", "about", "contact", "privacy", "terms", "affiliate", "blog", "noircoins"];
         if (validPages.includes(pageParam as Page)) {
           setCurrentPage(pageParam as Page);
           setSelectedProduct(null);
@@ -217,6 +224,12 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleCoinsClick = () => {
+    setCurrentPage("noircoins");
+    window.history.pushState(null, "", "?page=noircoins");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar
@@ -227,6 +240,7 @@ function AppContent() {
         onBlogClick={handleBlogClick}
         onAboutClick={handleAboutClick}
         onContactClick={handleContactClick}
+        onCoinsClick={handleCoinsClick}
         activePage={currentPage}
       />
 
@@ -258,6 +272,7 @@ function AppContent() {
       {currentPage === "terms" && <TermsPage />}
       {currentPage === "affiliate" && <AffiliatePage />}
       {currentPage === "blog" && <BlogPage />}
+      {currentPage === "noircoins" && <NoirCoinsPage />}
 
       <Footer />
     </div>

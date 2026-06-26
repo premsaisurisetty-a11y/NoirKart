@@ -22,13 +22,16 @@ interface NavbarProps {
   onBlogClick?: () => void;
   onAboutClick?: () => void;
   onContactClick?: () => void;
+  onCoinsClick?: () => void;
   activePage?: string;
 }
 
-export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, onBlogClick, onAboutClick, onContactClick, activePage = "home" }: NavbarProps) {
+export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, onBlogClick, onAboutClick, onContactClick, onCoinsClick, activePage = "home" }: NavbarProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [signUpName, setSignUpName] = useState("");
@@ -41,7 +44,9 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
     loginUser,
     logoutUser,
     isLoginOpen,
-    setIsLoginOpen
+    setIsLoginOpen,
+    sendOtp,
+    verifyOtpAndLogin
   } = useCart();
 
   const triggerToast = (msg: string) => {
@@ -49,74 +54,40 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
     setTimeout(() => { setToastMessage(null); }, 3500);
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { alert("Please fill in all fields."); return; }
-    
-    const lowercaseEmail = email.toLowerCase().trim();
-
-    if (isFirebaseConfigured && auth) {
-      try {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
-        setIsLoginOpen(false);
-        triggerToast("Logged in securely via Firebase Auth!");
-        setEmail(""); setPassword("");
-      } catch (err: any) {
-        console.error("Firebase Login Error:", err);
-        alert(`Authentication failed: ${err.message}`);
-      }
-    } else {
-      // Offline fallback: compare SHA-256 hashed password
-      const storedUsers = localStorage.getItem("noirkart_users");
-      let users = storedUsers ? JSON.parse(storedUsers) : [];
-      const foundUser = users.find((u: any) => u.email === lowercaseEmail);
-      if (foundUser) {
-        const passwordMatch = await verifyPassword(password, foundUser.password);
-        if (passwordMatch) {
-          localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: foundUser.name }));
-          loginUser(lowercaseEmail, foundUser.name);
-          setIsLoginOpen(false);
-          triggerToast(`Welcome back, ${foundUser.name}!`);
-          setEmail(""); setPassword("");
-        } else {
-          alert("Invalid email or password.\n\nPlease check your credentials and try again.");
-        }
-      } else {
-        alert("Invalid email or password.\n\nHint: Sign up for a new account or sign in with your registered credentials!");
-      }
+    if (!email) { alert("Please enter your email address."); return; }
+    setLoading(true);
+    try {
+      await sendOtp(email);
+      setOtpSent(true);
+      triggerToast("Verification code sent to your email!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to send verification code.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSignUpSubmit = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signUpName || !email || !password) { alert("Please fill in all fields."); return; }
-    if (password.length < 8) { alert("Password must be at least 8 characters long."); return; }
-    if (isFirebaseConfigured && auth) {
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        await updateProfile(userCredential.user, { displayName: signUpName.trim() });
-        setIsLoginOpen(false);
-        triggerToast(`Account created! Welcome, ${signUpName.trim()}.`);
-        setSignUpName(""); setEmail(""); setPassword("");
-      } catch (err: any) {
-        console.error("Firebase Sign Up Error:", err);
-        alert(`Failed to create account: ${err.message}`);
-      }
-    } else {
-      // Offline fallback: hash password with SHA-256 before storing
-      const lowercaseEmail = email.toLowerCase().trim();
-      const trimmedName = signUpName.trim();
-      const storedUsers = localStorage.getItem("noirkart_users");
-      let users = storedUsers ? JSON.parse(storedUsers) : [];
-      if (users.some((u: any) => u.email === lowercaseEmail)) { alert("An account with this email already exists."); return; }
-      const hashedPassword = await hashPassword(password);
-      users.push({ name: trimmedName, email: lowercaseEmail, password: hashedPassword });
-      localStorage.setItem("noirkart_users", JSON.stringify(users));
-      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: lowercaseEmail, name: trimmedName }));
-      loginUser(lowercaseEmail, trimmedName);
+    if (!otp) { alert("Please enter the 6-digit verification code."); return; }
+    if (isSignUp && !signUpName) { alert("Please enter your full name."); return; }
+    setLoading(true);
+    try {
+      await verifyOtpAndLogin(email, otp, isSignUp ? signUpName : undefined);
       setIsLoginOpen(false);
-      triggerToast(`Account created! Welcome, ${trimmedName}.`);
-      setSignUpName(""); setEmail(""); setPassword("");
+      triggerToast(isSignUp ? `Account created! Welcome, ${signUpName.trim()}.` : "Logged in successfully!");
+      setEmail("");
+      setOtp("");
+      setSignUpName("");
+      setOtpSent(false);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Verification failed. Please check the code and try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,6 +173,10 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
                           <ShieldCheck size={16} /> Admin Control Panel ⚙️
                         </button>
                       )}
+                      <button onClick={() => { onCoinsClick?.(); setShowDropdown(false); }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50/50 transition-colors flex items-center gap-2 cursor-pointer font-bold border-b border-gray-50">
+                        <span className="text-base">🪙</span> My NoirCoins Rewards
+                      </button>
                       <button onClick={() => { onCartClick?.(); setShowDropdown(false); }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer">
                         <Heart size={16} className="text-[#E23744]" /> My Shortlist ({cartCount})
@@ -333,36 +308,67 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
                 </p>
               </div>
 
-              <form onSubmit={isSignUp ? handleSignUpSubmit : handleLoginSubmit} className="space-y-4">
-                {isSignUp && (
-                  <div className="text-left">
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Full Name</label>
-                    <div className="relative">
-                      <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="text" placeholder="John Doe" value={signUpName} onChange={(e) => setSignUpName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all" />
+              {isSignUp && sessionStorage.getItem("noirkart_pending_referral") && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 mb-4 text-left">
+                  <span className="text-base mt-0.5">🎁</span>
+                  <div>
+                    <p className="text-xs font-bold text-amber-900">Referred by code: {sessionStorage.getItem("noirkart_pending_referral")}</p>
+                    <p className="text-[10px] text-amber-700 mt-0.5">Register now to earn your <strong>100 NoirCoins</strong> signup bonus!</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp} className="space-y-4">
+                {!otpSent ? (
+                  <>
+                    {isSignUp && (
+                      <div className="text-left animate-fadeIn">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Full Name</label>
+                        <div className="relative">
+                          <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input type="text" placeholder="John Doe" required value={signUpName} onChange={(e) => setSignUpName(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email Address</label>
+                      <div className="relative">
+                        <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input type="email" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all" />
+                      </div>
                     </div>
-                  </div>
+                    <button type="submit" disabled={loading} className="w-full bg-[#E23744] hover:bg-[#CB202D] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer mt-2">
+                      {loading ? "Sending Code..." : "Send Verification Code"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-gray-50 border border-gray-150 rounded-xl p-3.5 flex items-center justify-between gap-3 text-left">
+                      <div className="truncate">
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Sending to</p>
+                        <p className="text-xs font-bold text-gray-700 truncate">{email}</p>
+                      </div>
+                      <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="text-[10px] text-[#E23744] hover:underline font-bold whitespace-nowrap cursor-pointer">
+                        Change Email
+                      </button>
+                    </div>
+
+                    <div className="text-left animate-fadeIn">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">6-Digit Verification Code</label>
+                      <div className="relative">
+                        <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input type="text" placeholder="Enter 6-digit code" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all text-center tracking-[4px] font-mono font-bold" />
+                      </div>
+                    </div>
+
+                    <button type="submit" disabled={loading} className="w-full bg-[#E23744] hover:bg-[#CB202D] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer mt-2">
+                      {loading ? "Verifying..." : (isSignUp ? "Verify & Sign Up" : "Verify & Sign In")}
+                    </button>
+                  </>
                 )}
-                <div className="text-left">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email Address</label>
-                  <div className="relative">
-                    <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all" />
-                  </div>
-                </div>
-                <div className="text-left">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Password</label>
-                  <div className="relative">
-                    <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E23744]/30 focus:border-[#E23744]/40 text-sm transition-all" />
-                  </div>
-                </div>
-                <button type="submit" className="w-full bg-[#E23744] hover:bg-[#CB202D] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer mt-2">
-                  {isSignUp ? "Sign Up" : "Sign In"}
-                </button>
               </form>
 
               <div className="relative my-6">
@@ -380,7 +386,7 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
 
               <div className="text-center text-xs">
                 <span className="text-gray-400">{isSignUp ? "Already have an account? " : "New to noirkart? "}</span>
-                <button onClick={() => setIsSignUp(!isSignUp)} className="text-[#E23744] hover:underline font-bold cursor-pointer">
+                <button onClick={() => { setIsSignUp(!isSignUp); setOtpSent(false); setOtp(""); }} className="text-[#E23744] hover:underline font-bold cursor-pointer">
                   {isSignUp ? "Sign In" : "Create one"}
                 </button>
               </div>

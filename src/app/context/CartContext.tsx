@@ -4,8 +4,9 @@ import { featuredProducts } from "../data/products";
 import { Article, initialArticles } from "../data/articles";
 import { db, isFirebaseConfigured, auth } from "../lib/firebase";
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, getDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { postProductToPinterest } from "../lib/pinterest";
+import { UserProfile, CoinTransaction, Referral, PurchaseClaim, Redemption, UserBadge, runOfflineAction } from "../lib/noircoins";
 
 interface CartItem extends Product {
   quantity: number;
@@ -48,6 +49,35 @@ interface CartContextType {
   analyticsEvents: AnalyticsEvent[];
   trackView: (productId: number) => void;
   trackClick: (productId: number, merchantUrl: string, referrer: string) => void;
+
+  // NoirCoins State
+  coinsProfile: UserProfile | null;
+  coinsTransactions: CoinTransaction[];
+  coinsReferrals: Referral[];
+  coinsClaims: PurchaseClaim[];
+  coinsRedemptions: Redemption[];
+  coinsBadges: UserBadge[];
+  coinsLeaderboard: { topEarners: any[]; topReferrers: any[]; topShoppers: any[] };
+  coinsRules: { minRedemption: number; commissionPercentage: number; defaultAffiliateRate: number };
+  
+  // NoirCoins Methods
+  claimDailyLogin: () => Promise<number>;
+  submitPurchaseClaim: (merchant: string, orderId: string, amount: string) => Promise<void>;
+  requestRedemption: (amountCoins: number, type: string, details: string) => Promise<void>;
+  verifyEmailAddress: () => Promise<void>;
+  submitProductReview: (claimId: string, rating: number, reviewText: string) => Promise<void>;
+  sendOtp: (email: string) => Promise<void>;
+  verifyOtpAndLogin: (email: string, otp: string, name?: string) => Promise<void>;
+  
+  // Admin Methods (NoirCoins)
+  adminApproveClaim: (claimId: string, commissionAmount: string) => Promise<void>;
+  adminRejectClaim: (claimId: string, notes: string) => Promise<void>;
+  adminApproveRedemption: (redemptionId: string) => Promise<void>;
+  adminRejectRedemption: (redemptionId: string) => Promise<void>;
+  adminAdjustBalance: (email: string, amount: string, reason: string) => Promise<void>;
+  adminToggleFreeze: (email: string) => Promise<void>;
+  adminSetRules: (rules: any) => Promise<void>;
+  adminGetAllData: () => Promise<any>;
 }
 
 export interface AnalyticsEvent {
@@ -60,6 +90,8 @@ export interface AnalyticsEvent {
   timestamp: string;
   merchantUrl?: string;
   referrer?: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -112,6 +144,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const email = user.email || "";
           setActiveUserEmail(email);
           setUserName(user.displayName || "Premium Member");
+          loadCoinsUserData(email, user.displayName || "Premium Member");
           
           if (db) {
             getDoc(doc(db, "admins", email.toLowerCase())).then((docSnap) => {
@@ -128,6 +161,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setActiveUserEmail("");
           setUserName("");
           setIsAdmin(false);
+          setCoinsProfile(null);
+          setCoinsTransactions([]);
+          setCoinsReferrals([]);
+          setCoinsClaims([]);
+          setCoinsRedemptions([]);
+          setCoinsBadges([]);
         }
       });
       return () => unsubscribe();
@@ -141,6 +180,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setActiveUserEmail(parsed.email);
           setUserName(parsed.name);
           setIsAdmin(false); // Admin access requires Firebase Firestore verification
+          loadCoinsUserData(parsed.email, parsed.name);
         } catch (e) {
           console.error("Failed to restore local session", e);
         }
@@ -153,6 +193,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const lowercaseEmail = email.toLowerCase();
     setActiveUserEmail(lowercaseEmail);
     setUserName(name);
+    loadCoinsUserData(lowercaseEmail, name);
     
     if (isFirebaseConfigured && db) {
       getDoc(doc(db, "admins", lowercaseEmail)).then((docSnap) => {
@@ -170,6 +211,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setActiveUserEmail("");
     setUserName("");
     setIsAdmin(false);
+    setCoinsProfile(null);
+    setCoinsTransactions([]);
+    setCoinsReferrals([]);
+    setCoinsClaims([]);
+    setCoinsRedemptions([]);
+    setCoinsBadges([]);
     localStorage.removeItem("noirkart_active_session");
   };
 
@@ -313,7 +360,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
               category: data.category,
               timestamp: data.timestamp,
               merchantUrl: data.merchantUrl || undefined,
-              referrer: data.referrer || undefined
+              referrer: data.referrer || undefined,
+              userName: data.userName || "Guest",
+              userEmail: data.userEmail || undefined
             });
           });
           
@@ -647,7 +696,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       productName,
       productPrice,
       category,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      userName: userName || "Guest",
+      userEmail: activeUserEmail || undefined
     };
 
     setAnalyticsEvents((prev) => {
@@ -664,7 +715,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productName,
           productPrice,
           category,
-          timestamp: newEvent.timestamp
+          timestamp: newEvent.timestamp,
+          userName: userName || "Guest",
+          userEmail: activeUserEmail || null
         });
       } catch (err) {
         console.error("Failed to upload view event to Firebase:", err);
@@ -688,7 +741,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       category,
       timestamp: new Date().toISOString(),
       merchantUrl,
-      referrer
+      referrer,
+      userName: userName || "Guest",
+      userEmail: activeUserEmail || undefined
     };
 
     setAnalyticsEvents((prev) => {
@@ -707,7 +762,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           category,
           timestamp: newEvent.timestamp,
           merchantUrl,
-          referrer
+          referrer,
+          userName: userName || "Guest",
+          userEmail: activeUserEmail || null
         });
       } catch (err) {
         console.error("Failed to upload click event to Firebase:", err);
@@ -737,6 +794,433 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("data_purged_v2", "true");
     }
   }, [isFirebaseConfigured]);
+
+  // NoirCoins State
+  const [coinsProfile, setCoinsProfile] = useState<UserProfile | null>(null);
+  const [coinsTransactions, setCoinsTransactions] = useState<CoinTransaction[]>([]);
+  const [coinsReferrals, setCoinsReferrals] = useState<Referral[]>([]);
+  const [coinsClaims, setCoinsClaims] = useState<PurchaseClaim[]>([]);
+  const [coinsRedemptions, setCoinsRedemptions] = useState<Redemption[]>([]);
+  const [coinsBadges, setCoinsBadges] = useState<UserBadge[]>([]);
+  const [coinsLeaderboard, setCoinsLeaderboard] = useState<{ topEarners: any[]; topReferrers: any[]; topShoppers: any[] }>({
+    topEarners: [],
+    topReferrers: [],
+    topShoppers: []
+  });
+  const [coinsRules, setCoinsRules] = useState({ minRedemption: 10000, commissionPercentage: 30, defaultAffiliateRate: 8 });
+
+  const runLocalFallback = (email: string, name: string) => {
+    const cleanEmail = email.toLowerCase().trim();
+    const data = runOfflineAction("get_profile_details", { email: cleanEmail });
+    if (!data.profile) {
+      const freshProfile = runOfflineAction("init_profile", { email: cleanEmail, name });
+      setCoinsProfile(freshProfile);
+      const freshData = runOfflineAction("get_profile_details", { email: cleanEmail });
+      setCoinsTransactions(freshData.transactions || []);
+      setCoinsReferrals(freshData.referrals || []);
+      setCoinsClaims(freshData.claims || []);
+      setCoinsRedemptions(freshData.redemptions || []);
+      setCoinsBadges(freshData.badges || []);
+    } else {
+      setCoinsProfile(data.profile);
+      setCoinsTransactions(data.transactions || []);
+      setCoinsReferrals(data.referrals || []);
+      setCoinsClaims(data.claims || []);
+      setCoinsRedemptions(data.redemptions || []);
+      setCoinsBadges(data.badges || []);
+    }
+  };
+
+  const loadCoinsUserData = async (email: string, name: string) => {
+    if (!email) return;
+    const cleanEmail = email.toLowerCase().trim();
+    try {
+      if (isFirebaseConfigured && db) {
+        const pendingRef = sessionStorage.getItem("noirkart_pending_referral") || "";
+        const response = await fetch(`/api/rewards/get-dashboard?ref=${pendingRef}`, {
+          headers: {
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCoinsProfile(data.profile);
+          setCoinsTransactions(data.transactions || []);
+          setCoinsReferrals(data.referrals || []);
+          setCoinsClaims(data.claims || []);
+          setCoinsRedemptions(data.redemptions || []);
+          setCoinsBadges(data.badges || []);
+          setCoinsRules(data.rules || coinsRules);
+          return;
+        } else {
+          throw new Error(`API returned status ${response.status}`);
+        }
+      }
+      runLocalFallback(cleanEmail, name);
+    } catch (err) {
+      console.warn("Failed to load rewards from cloud, executing local fallback:", err);
+      runLocalFallback(cleanEmail, name);
+    }
+  };
+
+  // Load leaderboard & rules
+  useEffect(() => {
+    const loadPublicRewardsData = async () => {
+      try {
+        if (isFirebaseConfigured && db) {
+          const response = await fetch("/api/rewards/leaderboard");
+          if (response.ok) {
+            const data = await response.json();
+            setCoinsLeaderboard(data);
+            return;
+          }
+        }
+      } catch {}
+      const data = runOfflineAction("get_leaderboard", {});
+      setCoinsLeaderboard(data);
+    };
+    loadPublicRewardsData();
+  }, [coinsProfile]);
+
+  const claimDailyLogin = async (): Promise<number> => {
+    if (!activeUserEmail) throw new Error("Please log in to claim reward.");
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/claim-daily", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          await loadCoinsUserData(activeUserEmail, userName);
+          return data.payout;
+        }
+      }
+    } catch {}
+    const res = runOfflineAction("claim_daily", { email: activeUserEmail });
+    await loadCoinsUserData(activeUserEmail, userName);
+    return res.payout;
+  };
+
+  const submitPurchaseClaim = async (merchant: string, orderId: string, amount: string) => {
+    if (!activeUserEmail) throw new Error("Please log in to claim purchases.");
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/submit-claim", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ merchant, orderId, purchaseAmount: amount })
+        });
+        if (response.ok) {
+          await loadCoinsUserData(activeUserEmail, userName);
+          return;
+        }
+      }
+    } catch {}
+    runOfflineAction("submit_claim", { email: activeUserEmail, merchant, orderId, purchaseAmount: amount });
+    await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const requestRedemption = async (amountCoins: number, type: string, details: string) => {
+    if (!activeUserEmail) throw new Error("Please log in to redeem coins.");
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/redeem", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ amountCoins, type, details })
+        });
+        if (response.ok) {
+          await loadCoinsUserData(activeUserEmail, userName);
+          return;
+        }
+      }
+    } catch {}
+    runOfflineAction("redeem", { email: activeUserEmail, amountCoins, type, details });
+    await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const verifyEmailAddress = async () => {
+    if (!activeUserEmail) throw new Error("Please log in to verify email.");
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/verify-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          }
+        });
+        if (response.ok) {
+          await loadCoinsUserData(activeUserEmail, userName);
+          return;
+        }
+      }
+    } catch {}
+    runOfflineAction("verify_email", { email: activeUserEmail });
+    await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const submitProductReview = async (claimId: string, rating: number, reviewText: string) => {
+    if (!activeUserEmail) throw new Error("Please log in to submit reviews.");
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/submit-review", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ claimId, rating, reviewText })
+        });
+        if (response.ok) {
+          await loadCoinsUserData(activeUserEmail, userName);
+          return;
+        }
+      }
+    } catch {}
+    runOfflineAction("submit_review", { email: activeUserEmail, claimId, rating, reviewText });
+    await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const sendOtp = async (email: string) => {
+    const cleanEmail = email.toLowerCase().trim();
+    if (isFirebaseConfigured && db) {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail })
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to send verification code.");
+      }
+      
+      const data = await response.json();
+      if (!data.sent && data.otp) {
+        console.log(`[LOCAL DEV OTP] Code is ${data.otp}`);
+        alert(`[LOCAL TESTING] Resend API not configured.\nYour OTP code is: ${data.otp}\n(This alert only shows in development mode)`);
+      }
+    } else {
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem(`offline_otp_${cleanEmail}`, JSON.stringify({
+        code: otpCode,
+        expiresAt: Date.now() + 5 * 60 * 1000
+      }));
+      console.log(`[OFFLINE EMULATOR OTP] Code is ${otpCode}`);
+      alert(`[LOCAL TESTING] Running in offline emulator mode.\nYour OTP code is: ${otpCode}\n(This alert only shows in development mode)`);
+    }
+  };
+
+  const verifyOtpAndLogin = async (email: string, otp: string, name?: string) => {
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanOtp = otp.trim();
+
+    if (isFirebaseConfigured && db && auth) {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, otp: cleanOtp })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Verification failed.");
+      }
+
+      const { tempPassword } = await response.json();
+
+      try {
+        await signInWithEmailAndPassword(auth, cleanEmail, tempPassword);
+      } catch (err: any) {
+        if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/invalid-login-credentials") {
+          const displayName = name?.trim() || "Premium Member";
+          const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, tempPassword);
+          await updateProfile(userCredential.user, { displayName });
+          
+          setIsLoggedIn(true);
+          setActiveUserEmail(cleanEmail);
+          setUserName(displayName);
+          await loadCoinsUserData(cleanEmail, displayName);
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      const saved = sessionStorage.getItem(`offline_otp_${cleanEmail}`);
+      if (!saved) {
+        throw new Error("Verification code not found or expired. Please request a new one.");
+      }
+      const record = JSON.parse(saved);
+      if (Date.now() > record.expiresAt) {
+        sessionStorage.removeItem(`offline_otp_${cleanEmail}`);
+        throw new Error("Verification code has expired. Please request a new one.");
+      }
+      if (record.code !== cleanOtp) {
+        throw new Error("Incorrect verification code. Please try again.");
+      }
+
+      sessionStorage.removeItem(`offline_otp_${cleanEmail}`);
+
+      const storedUsers = localStorage.getItem("noirkart_users");
+      let users = storedUsers ? JSON.parse(storedUsers) : [];
+      let foundUser = users.find((u: any) => u.email === cleanEmail);
+      const displayName = name?.trim() || foundUser?.name || "Premium Member";
+      
+      if (!foundUser) {
+        foundUser = { name: displayName, email: cleanEmail };
+        users.push(foundUser);
+        localStorage.setItem("noirkart_users", JSON.stringify(users));
+      }
+
+      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: cleanEmail, name: displayName }));
+      loginUser(cleanEmail, displayName);
+    }
+  };
+
+  const adminApproveClaim = async (claimId: string, commissionAmount: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_approve_claim", payload: { claimId, commissionAmount } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_approve_claim", { claimId, commissionAmount });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminRejectClaim = async (claimId: string, notes: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_reject_claim", payload: { claimId, notes } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_reject_claim", { claimId, notes });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminApproveRedemption = async (redemptionId: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_approve_redemption", payload: { redemptionId } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_approve_redemption", { redemptionId });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminRejectRedemption = async (redemptionId: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_reject_redemption", payload: { redemptionId } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_reject_redemption", { redemptionId });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminAdjustBalance = async (email: string, amount: string, reason: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_adjust_balance", payload: { email, amount, reason } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_adjust_balance", { email, amount, reason });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminToggleFreeze = async (email: string) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_toggle_freeze", payload: { email } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_toggle_freeze", { email });
+    if (activeUserEmail) await loadCoinsUserData(activeUserEmail, userName);
+  };
+
+  const adminSetRules = async (rules: any) => {
+    try {
+      if (isFirebaseConfigured && db) {
+        await fetch("/api/rewards/admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          },
+          body: JSON.stringify({ action: "admin_set_rules", payload: { rules } })
+        });
+      }
+    } catch {}
+    runOfflineAction("admin_set_rules", { rules });
+    setCoinsRules(rules);
+  };
+
+  const adminGetAllData = async (): Promise<any> => {
+    try {
+      if (isFirebaseConfigured && db) {
+        const response = await fetch("/api/rewards/admin?action=get_all", {
+          headers: {
+            "Authorization": `Bearer ${await auth?.currentUser?.getIdToken()}`
+          }
+        });
+        if (response.ok) {
+          return await response.json();
+        }
+      }
+    } catch {}
+    return runOfflineAction("admin_get_all", {});
+  };
 
   const cartTotal = cart.reduce(
     (total, item) => total + item.price,
@@ -774,6 +1258,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
         analyticsEvents,
         trackView,
         trackClick,
+        coinsProfile,
+        coinsTransactions,
+        coinsReferrals,
+        coinsClaims,
+        coinsRedemptions,
+        coinsBadges,
+        coinsLeaderboard,
+        coinsRules,
+        claimDailyLogin,
+        submitPurchaseClaim,
+        requestRedemption,
+        verifyEmailAddress,
+        submitProductReview,
+        sendOtp,
+        verifyOtpAndLogin,
+        adminApproveClaim,
+        adminRejectClaim,
+        adminApproveRedemption,
+        adminRejectRedemption,
+        adminAdjustBalance,
+        adminToggleFreeze,
+        adminSetRules,
+        adminGetAllData,
       }}
     >
       {children}

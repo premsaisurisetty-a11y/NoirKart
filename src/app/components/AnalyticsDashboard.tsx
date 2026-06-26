@@ -588,6 +588,88 @@ export function AnalyticsDashboard() {
               </table>
             </div>
           </div>
+
+          {/* Activity Logs Section */}
+          <div className="bg-white rounded-2xl p-6 border border-[#E8E8E8]">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Recent Activity Logs</h3>
+                <p className="text-xs text-gray-500">Chronological history of user events on the website.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 uppercase">Total Event Logs:</span>
+                <span className="text-sm font-black text-rose-600 bg-rose-50 border border-rose-100 px-3 py-1 rounded-full">
+                  {filteredEvents.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E8E8E8] text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <th className="pb-3 pr-3">Timestamp</th>
+                    <th className="pb-3 pr-3">Event Type</th>
+                    <th className="pb-3 pr-3">User Name</th>
+                    <th className="pb-3 pr-3">Product Name</th>
+                    <th className="pb-3 text-right">Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F5F5F5]">
+                  {filteredEvents.map((event) => (
+                    <tr key={event.id} className="text-sm">
+                      <td className="py-4 text-xs font-semibold text-gray-500 pr-3 whitespace-nowrap">
+                        {new Date(event.timestamp).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: true
+                        })}
+                      </td>
+                      <td className="py-4 pr-3">
+                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${
+                          event.type === "view"
+                            ? "bg-blue-50 border-blue-100 text-blue-600"
+                            : "bg-rose-50 border-rose-100 text-rose-600"
+                        }`}>
+                          {event.type}
+                        </span>
+                      </td>
+                      <td className="py-4 font-bold text-gray-900 pr-3">
+                        <p>{event.userName || "Guest"}</p>
+                        {event.userEmail && (
+                          <p className="text-[10px] font-normal text-gray-400 mt-0.5">{event.userEmail}</p>
+                        )}
+                      </td>
+                      <td className="py-4 text-gray-700 pr-3">
+                        <p className="font-semibold line-clamp-1 leading-snug">{event.productName}</p>
+                        <span className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider mt-0.5 inline-block bg-gray-50 border border-gray-150 px-1.5 py-0.5 rounded">
+                          {event.category}
+                        </span>
+                      </td>
+                      <td className="py-4 text-right">
+                        {event.type === "click" && event.merchantUrl ? (
+                          <a
+                            href={event.merchantUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-bold text-rose-500 hover:text-rose-600 hover:underline inline-flex items-center gap-0.5 justify-end"
+                          >
+                            Go to Merchant <ArrowUpRight size={12} />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-450 font-semibold bg-gray-50 px-2 py-1 rounded">Viewed Details (₹{event.productPrice})</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
     </div>

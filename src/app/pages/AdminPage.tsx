@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2, Sparkles, Wand2, AlertCircle, Zap, ChevronDown, ChevronUp, Link as LinkIcon, FileText, CheckCheck, XCircle } from "lucide-react";
-import { useState, useCallback } from "react";
+import { ChevronLeft, Trash2, Edit, PlusCircle, ShoppingBag, DollarSign, List, ShieldCheck, CheckCircle2, UploadCloud, X, Loader2, Sparkles, Wand2, AlertCircle, Zap, ChevronDown, ChevronUp, Link as LinkIcon, FileText, CheckCheck, XCircle, Eye, Coins, Users, Settings, AlertTriangle } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
@@ -78,7 +78,16 @@ export function AdminPage({ onBack }: AdminPageProps) {
     articles,
     addArticle,
     deleteArticle,
-    updateArticle
+    updateArticle,
+    analyticsEvents,
+    adminApproveClaim,
+    adminRejectClaim,
+    adminApproveRedemption,
+    adminRejectRedemption,
+    adminAdjustBalance,
+    adminToggleFreeze,
+    adminSetRules,
+    adminGetAllData
   } = useCart();
 
   // Form State
@@ -98,7 +107,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Blog Form State
-  const [activeTab, setActiveTab] = useState<"products" | "blog" | "analytics">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "blog" | "analytics" | "rewards">("products");
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [articleTitle, setArticleTitle] = useState("");
   const [articleExcerpt, setArticleExcerpt] = useState("");
@@ -748,6 +757,662 @@ export function AdminPage({ onBack }: AdminPageProps) {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // NoirCoins Rewards Admin Panel Subcomponent
+  // ---------------------------------------------------------------------------
+  const RewardsAdminPanel = () => {
+    const [rewardsSubTab, setRewardsSubTab] = useState<"claims" | "redemptions" | "users" | "rules" | "fraud">("claims");
+    const [rewardsData, setRewardsData] = useState<any>(null);
+    const [rewardsLoading, setRewardsLoading] = useState(false);
+    const [userQuery, setUserQuery] = useState("");
+    
+    // Adjust balance form state
+    const [adjustEmail, setAdjustEmail] = useState("");
+    const [adjustAmount, setAdjustAmount] = useState("");
+    const [adjustReason, setAdjustReason] = useState("");
+    
+    // Approve/reject inputs
+    const [commAmounts, setCommAmounts] = useState<Record<string, string>>({});
+    const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
+
+    // Settings inputs
+    const [rulesMinRedeem, setRulesMinRedeem] = useState("");
+    const [rulesCommPct, setRulesCommPct] = useState("");
+    const [rulesDefaultAffiliate, setRulesDefaultAffiliate] = useState("");
+
+    const loadAllRewardsData = async () => {
+      setRewardsLoading(true);
+      try {
+        const data = await adminGetAllData();
+        setRewardsData(data);
+        if (data?.rules) {
+          setRulesMinRedeem(data.rules.minRedemption?.toString() || "10000");
+          setRulesCommPct(data.rules.commissionPercentage?.toString() || "30");
+          setRulesDefaultAffiliate(data.rules.defaultAffiliateRate?.toString() || "8");
+        }
+      } catch (err) {
+        console.error("Failed to load rewards data", err);
+      } finally {
+        setRewardsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadAllRewardsData();
+    }, []);
+
+    const handleApproveClaim = async (claimId: string) => {
+      const comm = commAmounts[claimId];
+      if (!comm || parseFloat(comm) <= 0) {
+        alert("Please enter a valid commission amount (₹) earned from this order.");
+        return;
+      }
+      try {
+        await adminApproveClaim(claimId, comm);
+        alert("Purchase claim approved, coins awarded!");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to approve claim");
+      }
+    };
+
+    const handleRejectClaim = async (claimId: string) => {
+      const notes = rejectNotes[claimId] || "Verification failed.";
+      try {
+        await adminRejectClaim(claimId, notes);
+        alert("Purchase claim rejected.");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to reject claim");
+      }
+    };
+
+    const handleApproveRedemption = async (redId: string) => {
+      if (!confirm("Are you sure you want to approve this redemption? (Voucher sent / UPI transferred)")) return;
+      try {
+        await adminApproveRedemption(redId);
+        alert("Redemption marked as approved!");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to approve redemption");
+      }
+    };
+
+    const handleRejectRedemption = async (redId: string) => {
+      if (!confirm("Are you sure you want to reject this redemption? Coins will be refunded to user.")) return;
+      try {
+        await adminRejectRedemption(redId);
+        alert("Redemption rejected and coins refunded.");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to reject redemption");
+      }
+    };
+
+    const handleAdjustBalanceSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!adjustEmail || !adjustAmount || !adjustReason) {
+        alert("Please fill in all fields to adjust balance.");
+        return;
+      }
+      try {
+        await adminAdjustBalance(adjustEmail, adjustAmount, adjustReason);
+        alert("User balance adjusted successfully!");
+        setAdjustEmail("");
+        setAdjustAmount("");
+        setAdjustReason("");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to adjust balance");
+      }
+    };
+
+    const handleToggleFreeze = async (email: string) => {
+      if (!confirm(`Are you sure you want to change freeze status for ${email}?`)) return;
+      try {
+        await adminToggleFreeze(email);
+        alert("User freeze status toggled!");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to toggle freeze status");
+      }
+    };
+
+    const handleSaveRules = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        await adminSetRules({
+          minRedemption: parseInt(rulesMinRedeem) || 10000,
+          commissionPercentage: parseInt(rulesCommPct) || 30,
+          defaultAffiliateRate: parseInt(rulesDefaultAffiliate) || 8
+        });
+        alert("Reward rules updated successfully!");
+        loadAllRewardsData();
+      } catch (err: any) {
+        alert(err.message || "Failed to update rules");
+      }
+    };
+
+    // Parse data safely
+    const users = rewardsData?.users || [];
+    const claims = rewardsData?.claims || [];
+    const redemptions = rewardsData?.redemptions || [];
+    const referrals = rewardsData?.referrals || [];
+
+    const pendingClaims = claims.filter((c: any) => c.status === "pending");
+    const pendingRedemptions = redemptions.filter((r: any) => r.status === "pending");
+
+    const filteredUsers = users.filter((u: any) => 
+      u.email.toLowerCase().includes(userQuery.toLowerCase()) || 
+      u.name.toLowerCase().includes(userQuery.toLowerCase())
+    );
+
+    // Fraud Scans algorithm:
+    // 1. Gmail Alias Spammers (root emails match, but plus alias is used)
+    // 2. Same Referral code used recursively, or referrals from same username prefix
+    const scanFraudList = () => {
+      const flags: { id: string; email: string; type: string; details: string; severity: "high" | "medium" }[] = [];
+      
+      const emailBaseMap: Record<string, string[]> = {};
+      users.forEach((u: any) => {
+        let base = u.email.toLowerCase();
+        if (base.includes("@gmail.com")) {
+          const parts = base.split("@");
+          const localPart = parts[0].split("+")[0].replace(/\./g, ""); // strip dots & plus
+          base = `${localPart}@gmail.com`;
+        }
+        if (!emailBaseMap[base]) emailBaseMap[base] = [];
+        emailBaseMap[base].push(u.email);
+      });
+
+      Object.entries(emailBaseMap).forEach(([base, list]) => {
+        if (list.length > 1) {
+          list.forEach(email => {
+            flags.push({
+              id: `fraud-gmail-${email}`,
+              email,
+              type: "Gmail Alias Spam",
+              details: `Shares root inbox pattern with: ${list.filter(e => e !== email).join(", ")}`,
+              severity: "high"
+            });
+          });
+        }
+      });
+
+      // Self Referral Scan (referred email matches pattern of referrer)
+      referrals.forEach((ref: any) => {
+        const refRoot = ref.refereeEmail.split("@")[0].toLowerCase().slice(0, 5);
+        const referrerRoot = ref.referrerEmail.split("@")[0].toLowerCase().slice(0, 5);
+        if (refRoot === referrerRoot) {
+          flags.push({
+            id: `fraud-self-${ref.refereeEmail}`,
+            email: ref.refereeEmail,
+            type: "Self-Referral Warning",
+            details: `Referred by: ${ref.referrerEmail} (very similar usernames)`,
+            severity: "medium"
+          });
+        }
+      });
+
+      return flags;
+    };
+
+    const fraudFlags = scanFraudList();
+
+    if (rewardsLoading && !rewardsData) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-150 rounded-2xl">
+          <Loader2 className="animate-spin text-[#E23744] mb-3" size={32} />
+          <p className="text-sm font-semibold text-gray-500">Loading Rewards Management Database...</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-[#ffffff] rounded-2xl p-6 border border-[#E8E8E8] space-y-6">
+        
+        {/* Header Summary */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4 gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Coins className="text-amber-500 animate-pulse" />
+              NoirCoins Rewards System Management
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">Vet orders commission claims, process payout redemptions, adjust user profiles, configure policies.</p>
+          </div>
+          <button 
+            onClick={loadAllRewardsData}
+            className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-250 text-gray-800 rounded-lg text-xs font-bold transition-all cursor-pointer"
+          >
+            Refresh Database ↻
+          </button>
+        </div>
+
+        {/* Quick Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-amber-500/5 border border-amber-200 rounded-xl p-4 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Pending Claims</div>
+            <div className="text-xl font-black text-amber-600 mt-1">{pendingClaims.length} Claims</div>
+          </div>
+          <div className="bg-indigo-500/5 border border-indigo-200 rounded-xl p-4 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Pending Cash Redemptions</div>
+            <div className="text-xl font-black text-indigo-600 mt-1">{pendingRedemptions.length} requests</div>
+          </div>
+          <div className="bg-emerald-500/5 border border-emerald-200 rounded-xl p-4 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Registered Loyalty Users</div>
+            <div className="text-xl font-black text-emerald-600 mt-1">{users.length} Users</div>
+          </div>
+          <div className="bg-red-500/5 border border-red-200 rounded-xl p-4 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider font-semibold">Flagged Fraud Attempts</div>
+            <div className="text-xl font-black text-red-500 mt-1">{fraudFlags.length} Warnings</div>
+          </div>
+        </div>
+
+        {/* Subtab Controls */}
+        <div className="flex border-b border-gray-150 gap-2 overflow-x-auto pb-1 text-xs">
+          {[
+            { id: "claims", label: `📦 Claims (${pendingClaims.length})` },
+            { id: "redemptions", label: `🎁 Redemptions (${pendingRedemptions.length})` },
+            { id: "users", label: `👥 Users Directory` },
+            { id: "rules", label: `⚙ Settings & Rules` },
+            { id: "fraud", label: `⚠ Fraud Scanner (${fraudFlags.length})` }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => setRewardsSubTab(tab.id as any)}
+              className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
+                rewardsSubTab === tab.id 
+                  ? "bg-gray-950 text-white shadow-xs" 
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* View Subtabs */}
+        <div className="min-h-[300px]">
+
+          {/* SUBTAB: CLAIMS */}
+          {rewardsSubTab === "claims" && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-gray-800">Pending Purchase Claims for Vetting</h3>
+              {pendingClaims.length === 0 ? (
+                <p className="text-xs text-gray-500 italic py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">No pending purchase claims to review.</p>
+              ) : (
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 font-bold text-gray-600 border-b border-gray-200">
+                        <th className="px-4 py-3">User & Date</th>
+                        <th className="px-4 py-3">Store & Order</th>
+                        <th className="px-4 py-3">Amount</th>
+                        <th className="px-4 py-3">Affiliate Commission (₹)</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-150">
+                      {pendingClaims.map((claim: any) => (
+                        <tr key={claim.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <div className="font-semibold text-gray-900">{claim.email}</div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">{new Date(claim.createdAt).toLocaleString()}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="font-bold text-gray-800">{claim.merchant}</div>
+                            <div className="text-[10px] text-gray-400 font-mono mt-0.5">{claim.orderId}</div>
+                          </td>
+                          <td className="px-4 py-4 font-semibold text-gray-800 whitespace-nowrap">
+                            ₹{claim.purchaseAmount.toLocaleString()}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-1.5 max-w-[120px]">
+                              <input 
+                                type="number" 
+                                placeholder="Comm ₹"
+                                value={commAmounts[claim.id] || ""}
+                                onChange={(e) => setCommAmounts(prev => ({ ...prev, [claim.id]: e.target.value }))}
+                                className="w-full bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-850"
+                              />
+                            </div>
+                            {commAmounts[claim.id] && (
+                              <span className="text-[9px] text-amber-600 block mt-1 font-bold">
+                                Rewards: {Math.round(parseFloat(commAmounts[claim.id] || "0") * 0.3 * 100)} 🪙
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button 
+                                onClick={() => handleApproveClaim(claim.id)}
+                                className="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-bold cursor-pointer transition-colors"
+                              >
+                                Approve
+                              </button>
+                              
+                              <details className="relative">
+                                <summary className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-[10px] font-bold list-none cursor-pointer">
+                                  Reject
+                                </summary>
+                                <div className="absolute right-0 bottom-full mb-2 bg-white border border-gray-250 rounded-xl p-3 shadow-xl z-50 text-left min-w-[200px]">
+                                  <label className="block text-[9px] font-bold uppercase text-gray-500 mb-1">Rejection Reason</label>
+                                  <input 
+                                    type="text" 
+                                    placeholder="e.g. Order cancelled"
+                                    value={rejectNotes[claim.id] || ""}
+                                    onChange={(e) => setRejectNotes(prev => ({ ...prev, [claim.id]: e.target.value }))}
+                                    className="w-full bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-800 mb-2"
+                                  />
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleRejectClaim(claim.id)}
+                                    className="w-full py-1 bg-red-600 hover:bg-red-750 text-white font-bold rounded text-[10px]"
+                                  >
+                                    Confirm Reject
+                                  </button>
+                                </div>
+                              </details>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUBTAB: REDEMPTIONS */}
+          {rewardsSubTab === "redemptions" && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-gray-800">Pending Coins Cashouts Vouchers</h3>
+              {pendingRedemptions.length === 0 ? (
+                <p className="text-xs text-gray-500 italic py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">No pending redemptions to verify.</p>
+              ) : (
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 font-bold text-gray-600 border-b border-gray-200">
+                        <th className="px-4 py-3">User & Date</th>
+                        <th className="px-4 py-3">Redeem Item</th>
+                        <th className="px-4 py-3">Target Details</th>
+                        <th className="px-4 py-3">Cash Value</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-150">
+                      {pendingRedemptions.map((red: any) => (
+                        <tr key={red.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <div className="font-semibold text-gray-900">{red.email}</div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">{new Date(red.createdAt).toLocaleString()}</div>
+                          </td>
+                          <td className="px-4 py-4 font-bold text-gray-800 whitespace-nowrap">
+                            {red.type}
+                          </td>
+                          <td className="px-4 py-4 font-mono text-gray-700 whitespace-nowrap select-all">
+                            {red.details}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="font-bold text-red-500">-{red.amountCoins.toLocaleString()} 🪙</div>
+                            <div className="text-[9px] text-gray-400">Equivalent to ₹{red.amountINR.toFixed(2)}</div>
+                          </td>
+                          <td className="px-4 py-4 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button 
+                                onClick={() => handleApproveRedemption(red.id)}
+                                className="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-bold cursor-pointer"
+                              >
+                                Mark Paid
+                              </button>
+                              <button 
+                                onClick={() => handleRejectRedemption(red.id)}
+                                className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-[10px] font-bold cursor-pointer"
+                              >
+                                Refund Coins
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SUBTAB: USERS DIRECTORY */}
+          {rewardsSubTab === "users" && (
+            <div className="space-y-6">
+              
+              <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                <h3 className="text-sm font-bold text-gray-800">NoirCoins Members Registry</h3>
+                <div className="relative w-full max-w-xs">
+                  <input 
+                    type="text" 
+                    placeholder="Search name or email..."
+                    value={userQuery}
+                    onChange={(e) => setUserQuery(e.target.value)}
+                    className="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              {/* Adjust Balance Override Inline form */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <form onSubmit={handleAdjustBalanceSubmit} className="flex flex-wrap gap-3 items-end">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-[9px] font-bold uppercase text-gray-500 mb-1">Override Balance User Email</label>
+                    <select 
+                      value={adjustEmail}
+                      onChange={(e) => setAdjustEmail(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-xs"
+                    >
+                      <option value="">Select User</option>
+                      {users.map((u: any) => (
+                        <option key={u.email} value={u.email}>{u.email} ({u.name})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-28">
+                    <label className="block text-[9px] font-bold uppercase text-gray-500 mb-1">Coin Offset (Δ)</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 500 or -1000"
+                      value={adjustAmount}
+                      onChange={(e) => setAdjustAmount(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-[9px] font-bold uppercase text-gray-500 mb-1">Override Reason</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Loyalty campaign compensation"
+                      value={adjustReason}
+                      onChange={(e) => setAdjustReason(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="px-4 py-2 bg-gray-950 text-white rounded text-xs font-bold hover:bg-gray-800 transition-colors cursor-pointer"
+                  >
+                    Adjust Balance
+                  </button>
+                </form>
+              </div>
+
+              {/* Users table */}
+              <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 font-bold text-gray-600 border-b border-gray-200">
+                      <th className="px-4 py-3">Member Name</th>
+                      <th className="px-4 py-3">Email Address</th>
+                      <th className="px-4 py-3">Active Balance</th>
+                      <th className="px-4 py-3">Lifetime Coins</th>
+                      <th className="px-4 py-3">Streak Count</th>
+                      <th className="px-4 py-3">Account Status</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-150">
+                    {filteredUsers.map((u: any) => (
+                      <tr key={u.email} className="hover:bg-gray-50">
+                        <td className="px-4 py-3.5 whitespace-nowrap font-bold text-gray-900">{u.name}</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap font-mono text-gray-600">{u.email}</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap font-bold text-amber-600 font-mono">{u.coinsBalance.toLocaleString()} 🪙</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap font-mono">{u.lifetimeCoins.toLocaleString()}</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap font-mono text-center">{u.streakCount || 0}d</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
+                            u.isFrozen 
+                              ? "bg-red-50 border-red-200 text-red-700" 
+                              : "bg-green-50 border-green-200 text-green-700"
+                          }`}>
+                            {u.isFrozen ? "Frozen" : "Active"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                          <div className="flex justify-end gap-1.5">
+                            <button 
+                              onClick={() => {
+                                setAdjustEmail(u.email);
+                                window.scrollTo({ top: 400, behavior: "smooth" });
+                              }}
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-[10px] font-bold cursor-pointer"
+                            >
+                              Adjust
+                            </button>
+                            <button 
+                              onClick={() => handleToggleFreeze(u.email)}
+                              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer border ${
+                                u.isFrozen 
+                                  ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" 
+                                  : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                              }`}
+                            >
+                              {u.isFrozen ? "Unfreeze" : "Freeze"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          )}
+
+          {/* SUBTAB: SETTINGS */}
+          {rewardsSubTab === "rules" && (
+            <div className="max-w-xl">
+              <h3 className="text-sm font-bold text-gray-800 mb-4">Modify Rewards System Ratios</h3>
+              
+              <form onSubmit={handleSaveRules} className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Minimum Redemption Limit (Coins)</label>
+                  <input 
+                    type="number" 
+                    value={rulesMinRedeem}
+                    onChange={(e) => setRulesMinRedeem(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Default 10,000 Coins = ₹100 INR conversion minimum threshold.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Referral / User Purchase Reward Ratio (% of Commission)</label>
+                  <input 
+                    type="number" 
+                    value={rulesCommPct}
+                    onChange={(e) => setRulesCommPct(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Percentage of affiliate commission value converted to loyalty coins. Default is 30%.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Estimated Direct Affiliate Margin (%)</label>
+                  <input 
+                    type="number" 
+                    value={rulesDefaultAffiliate}
+                    onChange={(e) => setRulesDefaultAffiliate(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Estimated standard referral margin on direct purchases when checking approximate product page preview coins rewards.</p>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="px-6 py-2.5 bg-gray-950 text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-colors shadow cursor-pointer"
+                >
+                  Save Policy Config
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* SUBTAB: FRAUD */}
+          {rewardsSubTab === "fraud" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-800">Automated Referral Abuse Scan Alerts</h3>
+                <span className="px-2 py-0.5 bg-red-100 text-red-700 border border-red-200 rounded-full font-bold text-[9px] uppercase tracking-wider">
+                  Active
+                </span>
+              </div>
+
+              {fraudFlags.length === 0 ? (
+                <p className="text-xs text-gray-500 italic py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">No suspicious account clusters or fingerprint collisions scanned.</p>
+              ) : (
+                <div className="space-y-3">
+                  {fraudFlags.map((flag) => (
+                    <div 
+                      key={flag.id} 
+                      className={`border rounded-xl p-4 flex items-start gap-3 bg-white ${
+                        flag.severity === "high" ? "border-red-300 bg-red-50/10" : "border-amber-300 bg-amber-50/10"
+                      }`}
+                    >
+                      <AlertTriangle className={flag.severity === "high" ? "text-red-500 shrink-0" : "text-amber-500 shrink-0"} size={18} />
+                      <div className="flex-1 text-left text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-extrabold text-gray-900">{flag.type}</span>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                            flag.severity === "high" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                          }`}>
+                            {flag.severity} RISK
+                          </span>
+                        </div>
+                        <p className="text-gray-700 font-mono font-semibold mt-1">Target Account: {flag.email}</p>
+                        <p className="text-gray-500 mt-0.5 leading-relaxed">{flag.details}</p>
+                        <div className="mt-3 flex gap-2">
+                          <button 
+                            onClick={() => handleToggleFreeze(flag.email)}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-[10px] font-bold transition-colors cursor-pointer"
+                          >
+                            Freeze Account
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    );
+  };
+
   // Quick stats calculations
   const totalCatalogValue = products.reduce((sum, p) => sum + p.price, 0);
   const averagePrice = products.length > 0 ? (totalCatalogValue / products.length).toFixed(0) : "0";
@@ -809,15 +1474,28 @@ export function AdminPage({ onBack }: AdminPageProps) {
           >
             📊 Advanced Analytics
           </button>
+          <button
+            onClick={() => {
+              setActiveTab("rewards");
+            }}
+            className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === "rewards"
+                ? "border-[#E23744] text-[#E23744]"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            🪙 Rewards Management
+          </button>
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {[
             { label: "Active Products", val: products.length, icon: List, col: "text-[#E23744] bg-[#E23744]/10" },
             { label: "Est. Catalog Value", val: `₹${totalCatalogValue.toLocaleString()}`, icon: DollarSign, col: "text-blue-400 bg-blue-500/10" },
             { label: "Avg. Item Price", val: `₹${averagePrice}`, icon: DollarSign, col: "text-purple-400 bg-purple-500/10" },
-            { label: "Shortlisted Watchers", val: `${cart.length} saves`, icon: ShoppingBag, col: "text-amber-400 bg-amber-500/10" }
+            { label: "Shortlisted Watchers", val: `${cart.length} saves`, icon: ShoppingBag, col: "text-amber-400 bg-amber-500/10" },
+            { label: "Total Activity Logs", val: `${analyticsEvents.length} events`, icon: Eye, col: "text-emerald-500 bg-emerald-500/10" }
           ].map((stat, i) => (
             <div key={i} className="bg-[#ffffff] rounded-xl p-5 border border-[#E8E8E8] flex items-center justify-between">
               <div>
@@ -834,6 +1512,10 @@ export function AdminPage({ onBack }: AdminPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {activeTab === "analytics" ? (
             <AnalyticsDashboard />
+          ) : activeTab === "rewards" ? (
+            <div className="lg:col-span-3">
+              <RewardsAdminPanel />
+            </div>
           ) : activeTab === "products" ? (
             <>
               {/* Add Product Form Column */}

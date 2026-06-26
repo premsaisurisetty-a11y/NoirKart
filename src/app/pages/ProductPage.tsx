@@ -167,6 +167,12 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
                     <Heart size={22} className={isSaved ? "fill-red-500" : ""} />
                   </button>
                 </div>
+
+                {/* NoirCoins rewards display */}
+                <div className="text-xs font-bold text-amber-600 bg-amber-50/60 border border-amber-100/80 rounded-xl p-3 flex items-center gap-2 mb-6">
+                  <span className="text-base select-none">🪙</span>
+                  <span>Shop Smart: Earn approx. <strong>{Math.round(product.price * 0.08 * 0.30 * 100).toLocaleString()} NoirCoins</strong> on verified purchase!</span>
+                </div>
               </div>
             </div>
           </div>
