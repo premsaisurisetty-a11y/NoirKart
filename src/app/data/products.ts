@@ -400,7 +400,7 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Audio",
     unit: "1 piece",
-    image: "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    image: "https://images.unsplash.com/photo-1608156639585-b3a032ef9689?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=wireless+earbuds+anc+noise+cancelling",
     keywords: ["earbuds", "tws", "wireless", "anc", "noise cancelling", "bluetooth", "in-ear", "music", "calls", "bass", "gaming", "low latency", "touch control", "waterproof", "premium"]
   },
@@ -439,7 +439,7 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     category: "Grocery",
     unit: "1 box",
-    image: "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+    image: "https://images.unsplash.com/photo-1596450514943-4339e1a8bb2a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
     buyLink: "https://www.amazon.in/s?k=premium+dry+fruits+gift+box+500g",
     keywords: ["dry fruits", "nuts", "almonds", "cashews", "pistachios", "raisins", "gift box", "healthy", "snacks", "protein", "diwali", "festival", "premium", "organic", "mixed nuts"]
   },

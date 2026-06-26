@@ -244,7 +244,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return updatedP;
         });
 
-        // Always add any missing default products (e.g. newly added Amazon products)
+        // If Firebase is configured, the Firestore database is the single source of truth.
+        // We return the cached database products directly without merging local code templates.
+        if (isFirebaseConfigured) {
+          return patched;
+        }
+
+        // Always add any missing default products (e.g. newly added Amazon products) in local/offline fallback mode
         const existingIds = new Set(patched.map((p: any) => p.id));
         const missing = featuredProducts.filter(fp => !existingIds.has(fp.id));
         const merged = [...patched, ...missing];
@@ -259,6 +265,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
     // Seed defaults
+    // If Firebase is configured, we return an empty array initially to avoid flashing templates while database loads.
+    if (isFirebaseConfigured) {
+      return [];
+    }
     localStorage.setItem("noirkart_products", JSON.stringify(featuredProducts));
     return featuredProducts;
   });
