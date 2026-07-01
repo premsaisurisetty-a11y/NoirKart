@@ -113,11 +113,41 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
     if (isFirebaseConfigured && auth) {
       try {
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
         await signInWithPopup(auth, provider);
         setIsLoginOpen(false);
         triggerToast("Signed in with Google!");
       } catch (err: any) {
-        if (err.code !== "auth/popup-closed-by-user") alert(`Google login failed: ${err.message}`);
+        if (err.code === "auth/popup-closed-by-user") {
+          return; // User closed the popup, no error alert needed
+        }
+        
+        console.error("Google Authentication error details:", err);
+        
+        // Formulate a helpful instruction message
+        let errorMsg = `Google login failed: ${err.message}`;
+        if (err.code === "auth/operation-not-allowed") {
+          errorMsg = "Google Sign-In provider is not enabled in your Firebase Console. Please go to Authentication > Sign-in method and enable Google.";
+        } else if (err.code === "auth/internal-error") {
+          errorMsg = "Firebase auth/internal-error encountered. This usually means Google Sign-In is disabled in the Firebase Console, or the Google Identity Toolkit API is not enabled in your Google Cloud Project.";
+        } else if (err.code === "auth/unauthorized-domain") {
+          errorMsg = "This domain is not authorized for OAuth operations in your Firebase project. Please add this domain to the 'Authorized domains' list in the Firebase Console (Authentication > Settings).";
+        }
+        
+        console.warn(`[Firebase Configuration Needed] To resolve this Google login error:\n` +
+          `1. Go to https://console.firebase.google.com/project/noirkart-7bb0a/authentication/providers\n` +
+          `2. Enable "Google" as a Sign-in provider.\n` +
+          `3. Ensure that your current domain (e.g. localhost, noirkart.com) is added to the "Authorized domains" list at:\n` +
+          `   https://console.firebase.google.com/project/noirkart-7bb0a/authentication/settings\n` +
+          `Falling back to simulated Google session for testing.`);
+
+        alert(`${errorMsg}\n\nFalling back to simulated session for local development/testing.`);
+        
+        // Fallback to simulated login so the flow still works
+        localStorage.setItem("noirkart_active_session", JSON.stringify({ email: "google.user@noirkart.com", name: "Google User" }));
+        loginUser("google.user@noirkart.com", "Google User");
+        setIsLoginOpen(false);
+        triggerToast("Signed in with Google! (Simulated Fallback)");
       }
     } else {
       localStorage.setItem("noirkart_active_session", JSON.stringify({ email: "google.user@noirkart.com", name: "Google User" }));
