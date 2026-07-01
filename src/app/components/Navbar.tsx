@@ -141,7 +141,8 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
           `   https://console.firebase.google.com/project/noirkart-7bb0a/authentication/settings\n` +
           `Falling back to simulated Google session for testing.`);
 
-        alert(`${errorMsg}\n\nFalling back to simulated session for local development/testing.`);
+        const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        alert(`${errorMsg}\n\nFalling back to simulated session for ${isLocalhost ? "local development/testing" : "demo/testing purposes"}.`);
         
         // Fallback to simulated login so the flow still works
         localStorage.setItem("noirkart_active_session", JSON.stringify({ email: "google.user@noirkart.com", name: "Google User" }));
