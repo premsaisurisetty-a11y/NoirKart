@@ -95,8 +95,9 @@ export default async function handler(req, res) {
       // Try sending email via Resend
       if (resend) {
         try {
+          const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
           const sendResult = await resend.emails.send({
-            from: 'NoirKart Login <auth@noirkart.in>',
+            from: `NoirKart Login <${fromEmail}>`,
             to: cleanEmail,
             subject: `${otpCode} is your NoirKart login verification code`,
             html: `
