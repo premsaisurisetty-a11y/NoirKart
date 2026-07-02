@@ -95,7 +95,7 @@ export default async function handler(req, res) {
       // Try sending email via Resend
       if (resend) {
         try {
-          await resend.emails.send({
+          const sendResult = await resend.emails.send({
             from: 'NoirKart Login <auth@noirkart.in>',
             to: cleanEmail,
             subject: `${otpCode} is your NoirKart login verification code`,
@@ -113,6 +113,17 @@ export default async function handler(req, res) {
               </div>
             `
           });
+
+          if (sendResult.error) {
+            console.error("Resend API returned error:", sendResult.error);
+            return res.status(200).json({ 
+              success: true, 
+              sent: false, 
+              otp: otpCode, 
+              error: `Resend error: ${sendResult.error.message}` 
+            });
+          }
+
           return res.status(200).json({ success: true, sent: true });
         } catch (emailErr) {
           console.error("Failed to send email via Resend:", emailErr);
@@ -121,7 +132,7 @@ export default async function handler(req, res) {
             success: true, 
             sent: false, 
             otp: otpCode, 
-            error: "Failed to dispatch email. Code provided in response for debugging." 
+            error: `Failed to dispatch email: ${emailErr.message || emailErr}` 
           });
         }
       } else {
