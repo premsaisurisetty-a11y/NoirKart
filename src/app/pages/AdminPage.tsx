@@ -7,6 +7,7 @@ import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
 import { storage, isFirebaseConfigured } from "../lib/firebase";
 import { generateProductWithAI, generateProductFromAmazonLink, isAmazonUrl, isGeminiConfigured, bulkGenerateProducts, BulkItem } from "../lib/gemini";
 import { sanitizeText, sanitizeUrl, validateUrl, validatePrice } from "../lib/sanitize";
+import { SocialPostForm } from "../components/SocialPostForm";
 
 // Helper function to compress images before uploading to prevent cloud errors and large Base64 Firestore payloads
 const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
@@ -107,7 +108,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Blog Form State
-  const [activeTab, setActiveTab] = useState<"products" | "blog" | "analytics" | "rewards">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "blog" | "analytics" | "rewards" | "social">("products");
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [articleTitle, setArticleTitle] = useState("");
   const [articleExcerpt, setArticleExcerpt] = useState("");
@@ -1486,6 +1487,18 @@ export function AdminPage({ onBack }: AdminPageProps) {
           >
             🪙 Rewards Management
           </button>
+          <button
+            onClick={() => {
+              setActiveTab("social");
+            }}
+            className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === "social"
+                ? "border-[#E23744] text-[#E23744]"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            📢 Direct Social Post
+          </button>
         </div>
 
         {/* Quick Stats Grid */}
@@ -1515,6 +1528,10 @@ export function AdminPage({ onBack }: AdminPageProps) {
           ) : activeTab === "rewards" ? (
             <div className="lg:col-span-3">
               <RewardsAdminPanel />
+            </div>
+          ) : activeTab === "social" ? (
+            <div className="lg:col-span-3">
+              <SocialPostForm products={products} triggerToast={triggerToast} />
             </div>
           ) : activeTab === "products" ? (
             <>
