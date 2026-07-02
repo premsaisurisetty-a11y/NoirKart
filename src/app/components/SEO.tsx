@@ -48,6 +48,9 @@ const SEO: React.FC<SEOProps> = ({
       {import.meta.env.VITE_PINTEREST_VERIFICATION_CODE && (
         <meta name="p:domain_verify" content={import.meta.env.VITE_PINTEREST_VERIFICATION_CODE} />
       )}
+      {import.meta.env.VITE_META_DOMAIN_VERIFICATION && (
+        <meta name="facebook-domain-verification" content={import.meta.env.VITE_META_DOMAIN_VERIFICATION} />
+      )}
       {import.meta.env.VITE_GOOGLE_SITE_VERIFICATION && (
         <meta name="google-site-verification" content={import.meta.env.VITE_GOOGLE_SITE_VERIFICATION} />
       )}

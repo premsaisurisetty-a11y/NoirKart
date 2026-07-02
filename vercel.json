@@ -5,6 +5,10 @@
       "destination": "/api/pinterest-feed"
     },
     {
+      "source": "/instagram-feed.xml",
+      "destination": "/api/instagram-feed"
+    },
+    {
       "source": "/api/contact",
       "destination": "/api/contact"
     },
@@ -55,7 +59,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://s.pinterest.com https://text.pollinations.ai https://apis.google.com https://www.gstatic.com https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com https://generativelanguage.googleapis.com https://www.google-analytics.com https://analytics.google.com https://api.codetabs.com https://text.pollinations.ai https://image.pollinations.ai https://api.resend.com; frame-src 'self' https://noirkart-7bb0a.firebaseapp.com https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://s.pinterest.com https://connect.facebook.net https://text.pollinations.ai https://apis.google.com https://www.gstatic.com https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com https://generativelanguage.googleapis.com https://www.google-analytics.com https://analytics.google.com https://api.codetabs.com https://text.pollinations.ai https://image.pollinations.ai https://api.resend.com https://graph.facebook.com https://www.facebook.com; frame-src 'self' https://noirkart-7bb0a.firebaseapp.com https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
         }
       ]
     },

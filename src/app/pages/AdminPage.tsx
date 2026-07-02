@@ -649,7 +649,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
         keywords,
         description: safeDescription
       });
-      triggerToast(`✅ "${safeName}" published & auto-pinned to Pinterest!`);
+      triggerToast(`✅ "${safeName}" published & auto-shared to Pinterest & Instagram!`);
     }
 
     // Reset Form

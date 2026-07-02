@@ -6,6 +6,7 @@ import { db, isFirebaseConfigured, auth } from "../lib/firebase";
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, getDoc } from "firebase/firestore";
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { postProductToPinterest } from "../lib/pinterest";
+import { postProductToInstagram } from "../lib/instagram";
 import { UserProfile, CoinTransaction, Referral, PurchaseClaim, Redemption, UserBadge, runOfflineAction } from "../lib/noircoins";
 
 interface CartItem extends Product {
@@ -467,6 +468,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Auto-pin to Pinterest whenever a product is published
     postProductToPinterest(productWithId).catch((err) =>
       console.warn("[NoirKart Pinterest] Auto-pin failed silently:", err)
+    );
+
+    // Auto-post to Instagram whenever a product is published
+    postProductToInstagram(productWithId).catch((err) =>
+      console.warn("[NoirKart Instagram] Auto-post failed silently:", err)
     );
   };
 

@@ -63,6 +63,32 @@ function AppContent() {
         globalWindow.gtag("config", gaId);
       }
     }
+
+    const pixelId = import.meta.env.VITE_META_PIXEL_ID;
+    if (pixelId) {
+      const globalWindow = window as any;
+      if (!globalWindow.fbq) {
+        globalWindow.fbq = function () {
+          if (globalWindow.fbq.callMethod) {
+            globalWindow.fbq.callMethod.apply(globalWindow.fbq, arguments);
+          } else {
+            globalWindow.fbq.queue.push(arguments);
+          }
+        };
+        if (!globalWindow._fbq) globalWindow._fbq = globalWindow.fbq;
+        globalWindow.fbq.push = globalWindow.fbq;
+        globalWindow.fbq.loaded = true;
+        globalWindow.fbq.version = "2.0";
+        globalWindow.fbq.queue = [];
+        const t = document.createElement("script");
+        t.async = true;
+        t.src = "https://connect.facebook.net/en_US/fbevents.js";
+        const r = document.getElementsByTagName("script")[0];
+        r.parentNode?.insertBefore(t, r);
+      }
+      globalWindow.fbq("init", pixelId);
+      globalWindow.fbq("track", "PageView");
+    }
   }, []);
 
   // Intercept local page links (?page=) to do client-side SPA routing

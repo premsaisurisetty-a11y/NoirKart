@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/generate-pinterest-feed.cjs && node scripts/generate-sitemap.cjs",
+    "prebuild": "node scripts/generate-pinterest-feed.cjs && node scripts/generate-instagram-feed.cjs && node scripts/generate-sitemap.cjs",
     "build": "vite build",
     "dev": "vite"
   },

@@ -1,12 +1,14 @@
 import { motion } from "motion/react";
-import { Star, ChevronLeft, Heart, Check, HelpCircle, ArrowRight, ExternalLink } from "lucide-react";
-import { useEffect } from "react";
+import { Star, ChevronLeft, Heart, Check, HelpCircle, ArrowRight, ExternalLink, Instagram, Download } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { Product, ProductCard } from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
 import { getProductTrustMetadata } from "../lib/trustLayer";
 import SEO from "../components/SEO";
 import { pinViaWebDialog } from "../lib/pinterest";
+import { postProductToInstagram } from "../lib/instagram";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
 
 
 interface ProductPageProps { 
@@ -18,6 +20,7 @@ interface ProductPageProps {
 export function ProductPage({ product, onBack, onProductClick }: ProductPageProps) {
   const { cart, addToCart, removeFromCart, products, articles, trackView, trackClick, isAdmin } = useCart();
   const isSaved = cart.some((item) => item.id === product.id);
+  const [isInstagramModalOpen, setIsInstagramModalOpen] = useState(false);
   const { 
     dealScore, 
     valueScore, 
@@ -48,6 +51,15 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
           ]
         });
       }
+      if (globalWindow.fbq) {
+        globalWindow.fbq('track', 'AddToCart', {
+          value: product.price,
+          currency: 'INR',
+          content_name: product.name,
+          content_type: 'product',
+          content_ids: [product.id.toString()]
+        });
+      }
     }
   };
   
@@ -71,10 +83,36 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
         ]
       });
     }
+    if (globalWindow.fbq) {
+      globalWindow.fbq('track', 'ViewContent', {
+        value: product.price,
+        currency: 'INR',
+        content_name: product.name,
+        content_type: 'product',
+        content_ids: [product.id.toString()]
+      });
+    }
   }, [product]);
 
   const shareToPinterest = () => {
     pinViaWebDialog(product);
+  };
+
+  const shareToInstagram = async () => {
+    const result = await postProductToInstagram(product);
+    if (result.method === "fallback") {
+      setIsInstagramModalOpen(true);
+    }
+  };
+
+  const handleDownloadImage = () => {
+    const a = document.createElement("a");
+    a.href = product.image;
+    a.download = `${product.name.replace(/\s+/g, "_")}.jpg`;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const relatedProducts = products.filter(p => p.id !== product.id && p.category === product.category).slice(0, 6);
@@ -153,13 +191,20 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
                     Buy Vetted Deal ↗
                   </Button>
                   {isAdmin && (
-                    <button onClick={shareToPinterest}
-                      className="p-3.5 rounded-xl border border-gray-200 text-gray-500 hover:text-[#BD081C] hover:bg-red-50 hover:border-red-100 transition-all cursor-pointer"
-                      title="Pin to Pinterest">
-                      <svg viewBox="0 0 24 24" className="w-[22px] h-[22px]" fill="currentColor">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.16 9.4 7.63 11.16-.1-.95-.2-2.4.04-3.43.22-.93 1.4-5.93 1.4-5.93s-.36-.72-.36-1.77c0-1.66.96-2.9 2.17-2.9 1.02 0 1.52.77 1.52 1.68 0 1.03-.65 2.57-.99 4c-.28 1.19.6 2.16 1.77 2.16 2.12 0 3.76-2.24 3.76-5.47 0-2.86-2.06-4.86-5-4.86-3.4 0-5.4 2.56-5.4 5.2 0 1.03.4 2.14.9 2.74.1.12.1.23.08.34l-.34 1.4c-.06.24-.18.28-.4.18-1.5-.7-2.43-2.9-2.43-4.66 0-3.8 2.76-7.3 7.97-7.3 4.18 0 7.43 2.98 7.43 6.96 0 4.16-2.62 7.5-6.26 7.5-1.22 0-2.37-.63-2.76-1.38l-.75 2.87c-.27 1.04-1.02 2.34-1.5 3.13C10.74 23.83 11.36 24 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/>
-                      </svg>
-                    </button>
+                    <div className="flex gap-2">
+                      <button onClick={shareToPinterest}
+                        className="p-3.5 rounded-xl border border-gray-200 text-gray-500 hover:text-[#BD081C] hover:bg-red-50 hover:border-red-100 transition-all cursor-pointer"
+                        title="Pin to Pinterest">
+                        <svg viewBox="0 0 24 24" className="w-[22px] h-[22px]" fill="currentColor">
+                          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.16 9.4 7.63 11.16-.1-.95-.2-2.4.04-3.43.22-.93 1.4-5.93 1.4-5.93s-.36-.72-.36-1.77c0-1.66.96-2.9 2.17-2.9 1.02 0 1.52.77 1.52 1.68 0 1.03-.65 2.57-.99 4c-.28 1.19.6 2.16 1.77 2.16 2.12 0 3.76-2.24 3.76-5.47 0-2.86-2.06-4.86-5-4.86-3.4 0-5.4 2.56-5.4 5.2 0 1.03.4 2.14.9 2.74.1.12.1.23.08.34l-.34 1.4c-.06.24-.18.28-.4.18-1.5-.7-2.43-2.9-2.43-4.66 0-3.8 2.76-7.3 7.97-7.3 4.18 0 7.43 2.98 7.43 6.96 0 4.16-2.62 7.5-6.26 7.5-1.22 0-2.37-.63-2.76-1.38l-.75 2.87c-.27 1.04-1.02 2.34-1.5 3.13C10.74 23.83 11.36 24 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/>
+                        </svg>
+                      </button>
+                      <button onClick={shareToInstagram}
+                        className="p-3.5 rounded-xl border border-gray-200 text-gray-500 hover:text-[#E1306C] hover:bg-pink-50 hover:border-pink-100 transition-all cursor-pointer"
+                        title="Share to Instagram">
+                        <Instagram size={22} />
+                      </button>
+                    </div>
                   )}
                   <button onClick={handleSave}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer ${isSaved ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
@@ -408,6 +453,76 @@ export function ProductPage({ product, onBack, onProductClick }: ProductPageProp
           )}
         </div>
       </div>
+
+      {/* Instagram Manual Share Fallback Guide Dialog */}
+      <Dialog open={isInstagramModalOpen} onOpenChange={setIsInstagramModalOpen}>
+        <DialogContent className="max-w-md bg-white border border-gray-100 shadow-xl rounded-2xl p-6">
+          <DialogHeader className="space-y-3">
+            <div className="mx-auto w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center text-[#E1306C]">
+              <Instagram size={24} />
+            </div>
+            <DialogTitle className="text-xl font-bold text-gray-900 text-center">Instagram Manual Publishing</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 text-center">
+              Instagram does not support direct web publishing links. Follow these quick steps to post this curated product.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="my-6 space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-xl">
+              <Check className="text-green-600 mt-0.5 shrink-0" size={18} />
+              <div className="text-xs text-green-800">
+                <strong>Caption Copied!</strong> The formatted product caption (including the verified check-out link and tags) has been successfully copied to your clipboard.
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-3 text-xs leading-relaxed text-gray-600 font-medium">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-gray-700 font-bold flex items-center justify-center shrink-0">1</span>
+                <div>
+                  Save the product image to your local device.
+                  <button 
+                    onClick={handleDownloadImage}
+                    className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-[#E23744] hover:underline cursor-pointer"
+                  >
+                    <Download size={12} /> Download Product Image
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 text-xs leading-relaxed text-gray-600 font-medium">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-gray-700 font-bold flex items-center justify-center shrink-0">2</span>
+                <div>
+                  We have opened your Instagram account page in a new tab. Select <strong>Create Post / Story</strong>.
+                </div>
+              </div>
+
+              <div className="flex gap-3 text-xs leading-relaxed text-gray-600 font-medium">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-gray-700 font-bold flex items-center justify-center shrink-0">3</span>
+                <div>
+                  Choose the saved image, paste the caption from your clipboard, and publish!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsInstagramModalOpen(false)}
+              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer text-center border-none"
+            >
+              Done
+            </button>
+            <a
+              href={import.meta.env.VITE_INSTAGRAM_PROFILE_URL || "https://www.instagram.com"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] hover:opacity-90 text-white font-bold text-xs rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1.5 no-underline"
+            >
+              Open Instagram ↗
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
