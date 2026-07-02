@@ -1018,7 +1018,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (!data.sent && data.otp) {
         console.log(`[LOCAL DEV OTP] Code is ${data.otp}`);
-        alert(`[SMTP Configuration Needed]\n\nYour SMTP server credentials (SMTP_USER, SMTP_PASS) are not configured, or the server returned an error.\n\nUse this OTP code for testing/login: ${data.otp}`);
+        const errorDetail = data.error ? `\n\nError details: ${data.error}` : "";
+        alert(`[SMTP Configuration Needed]\n\nYour SMTP server credentials (SMTP_USER, SMTP_PASS) are not configured, or the server returned an error.${errorDetail}\n\nUse this OTP code for testing/login: ${data.otp}`);
       }
     } else {
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
