@@ -1,6 +1,15 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Nodemailer SMTP Transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "",
+  port: parseInt(process.env.SMTP_PORT || "587", 10),
+  secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
+  auth: {
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASS || ""
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Security: In-memory rate limiter (per IP, resets per Vercel function lifecycle)
@@ -146,8 +155,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please provide a valid email address.' });
   }
 
-  // Security: Resend API key check
-  if (!process.env.RESEND_API_KEY) {
+  // Security: SMTP check
+  const isSmtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+  if (!isSmtpConfigured) {
     return res.status(500).json({ error: 'Email service is not configured.' });
   }
 
@@ -160,8 +170,9 @@ export default async function handler(req, res) {
     .replace(/\n/g, '<br/>'); // safe newlines in email body
 
   try {
-    await resend.emails.send({
-      from: 'NoirKart Contact <onboarding@resend.dev>',
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+    await transporter.sendMail({
+      from: `NoirKart Contact <${fromEmail}>`,
       to: 'premsaisurisetty@gmail.com',
       replyTo: safeEmail,
       subject: `NoirKart Contact: Message from ${safeName}`,
@@ -200,7 +211,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Resend error:', err);
+    console.error('SMTP error:', err);
     return res.status(500).json({ error: 'Failed to send message. Please try again.' });
   }
 }

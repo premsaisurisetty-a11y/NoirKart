@@ -3,7 +3,7 @@ import {
   getFirestore, doc, getDoc, setDoc, deleteDoc, collection, 
   getDocs, query, where
 } from "firebase/firestore";
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 
 const firebaseConfig = {
@@ -24,7 +24,16 @@ function getDb() {
   return getFirestore(app);
 }
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Nodemailer SMTP Transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "",
+  port: parseInt(process.env.SMTP_PORT || "587", 10),
+  secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
+  auth: {
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASS || ""
+  }
+});
 
 // In-memory fallback map for storing OTPs when Firebase is not configured
 const inMemoryOtps = new Map(); // email -> { code, expiresAt }
@@ -92,11 +101,12 @@ export default async function handler(req, res) {
 
       console.log(`[OTP DEBUG] OTP for ${cleanEmail} is ${otpCode}`);
 
-      // Try sending email via Resend
-      if (resend) {
+      // Try sending email via SMTP
+      const isSmtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+      if (isSmtpConfigured) {
         try {
-          const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-          const sendResult = await resend.emails.send({
+          const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+          await transporter.sendMail({
             from: `NoirKart Login <${fromEmail}>`,
             to: cleanEmail,
             subject: `${otpCode} is your NoirKart login verification code`,
@@ -115,25 +125,14 @@ export default async function handler(req, res) {
             `
           });
 
-          if (sendResult.error) {
-            console.error("Resend API returned error:", sendResult.error);
-            return res.status(200).json({ 
-              success: true, 
-              sent: false, 
-              otp: otpCode, 
-              error: `Resend error: ${sendResult.error.message}` 
-            });
-          }
-
           return res.status(200).json({ success: true, sent: true });
         } catch (emailErr) {
-          console.error("Failed to send email via Resend:", emailErr);
-          // Fallback to returning the OTP if Resend fails, so it doesn't block developers
+          console.error("Failed to send email via SMTP:", emailErr);
           return res.status(200).json({ 
             success: true, 
             sent: false, 
             otp: otpCode, 
-            error: `Failed to dispatch email: ${emailErr.message || emailErr}` 
+            error: `SMTP error: ${emailErr.message || emailErr}` 
           });
         }
       } else {
@@ -142,7 +141,7 @@ export default async function handler(req, res) {
           success: true, 
           sent: false, 
           otp: otpCode, 
-          note: "Resend not configured. OTP printed for development." 
+          note: "SMTP not configured. OTP printed for development." 
         });
       }
     }

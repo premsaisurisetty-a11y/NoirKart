@@ -1018,7 +1018,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (!data.sent && data.otp) {
         console.log(`[LOCAL DEV OTP] Code is ${data.otp}`);
-        alert(`[Resend Configuration Needed]\n\nYour Resend email domain (noirkart.in) is not verified, so the email could not be sent.\n\nUse this OTP code for testing/login: ${data.otp}`);
+        alert(`[SMTP Configuration Needed]\n\nYour SMTP server credentials (SMTP_USER, SMTP_PASS) are not configured, or the server returned an error.\n\nUse this OTP code for testing/login: ${data.otp}`);
       }
     } else {
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
