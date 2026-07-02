@@ -138,23 +138,12 @@ export function Navbar({ cartCount = 0, onCartClick, onLogoClick, onAdminClick, 
           `1. Go to https://console.firebase.google.com/project/noirkart-7bb0a/authentication/providers\n` +
           `2. Enable "Google" as a Sign-in provider.\n` +
           `3. Ensure that your current domain (e.g. localhost, noirkart.com) is added to the "Authorized domains" list at:\n` +
-          `   https://console.firebase.google.com/project/noirkart-7bb0a/authentication/settings\n` +
-          `Falling back to simulated Google session for testing.`);
+          `   https://console.firebase.google.com/project/noirkart-7bb0a/authentication/settings`);
 
-        const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-        alert(`${errorMsg}\n\nFalling back to simulated session for ${isLocalhost ? "local development/testing" : "demo/testing purposes"}.`);
-        
-        // Fallback to simulated login so the flow still works
-        localStorage.setItem("noirkart_active_session", JSON.stringify({ email: "google.user@noirkart.com", name: "Google User" }));
-        loginUser("google.user@noirkart.com", "Google User");
-        setIsLoginOpen(false);
-        triggerToast("Signed in with Google! (Simulated Fallback)");
+        alert(errorMsg);
       }
     } else {
-      localStorage.setItem("noirkart_active_session", JSON.stringify({ email: "google.user@noirkart.com", name: "Google User" }));
-      loginUser("google.user@noirkart.com", "Google User");
-      setIsLoginOpen(false);
-      triggerToast("Signed in with Google! (Simulated)");
+      alert("Firebase is not configured or initialized. Google Sign-In is unavailable.");
     }
   };
 
